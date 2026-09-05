@@ -14,7 +14,7 @@ function App() {
   const [pagina, setPagina] = useState('inicio')
 
   // =========================================================
-  // SESIÓN DE SUPABASE
+  // SESIÓN
   // =========================================================
 
   const [usuarioSesion, setUsuarioSesion] = useState(null)
@@ -49,7 +49,169 @@ function App() {
   const [busquedaGeneral, setBusquedaGeneral] = useState('')
 
   // =========================================================
-  // SESIÓN DE SUPABASE
+  // CUESTIONARIOS
+  // =========================================================
+
+  const preguntas = [
+    {
+      id: 1,
+      tema: 'Signos vitales',
+      pregunta:
+        '¿Cuál de los siguientes corresponde a un signo vital?',
+      opciones: [
+        'Presión arterial',
+        'Peso',
+        'Talla',
+        'Perímetro abdominal',
+      ],
+      correcta: 0,
+    },
+
+    {
+      id: 2,
+      tema: 'Higiene de manos',
+      pregunta:
+        '¿Cuál es uno de los objetivos principales de la higiene de manos?',
+      opciones: [
+        'Aumentar la temperatura corporal',
+        'Prevenir la transmisión de microorganismos',
+        'Disminuir la presión arterial',
+        'Aumentar la frecuencia cardíaca',
+      ],
+      correcta: 1,
+    },
+
+    {
+      id: 3,
+      tema: 'Medicamentos',
+      pregunta:
+        'Antes de administrar un medicamento se debe verificar principalmente:',
+      opciones: [
+        'El color de la habitación',
+        'La indicación, paciente, medicamento, dosis, vía y horario',
+        'La temperatura exterior',
+        'El peso del equipo clínico',
+      ],
+      correcta: 1,
+    },
+
+    {
+      id: 4,
+      tema: 'Glicemia',
+      pregunta:
+        '¿Qué equipo se utiliza habitualmente para medir la glicemia capilar?',
+      opciones: [
+        'Tensiómetro',
+        'Glucómetro',
+        'Termómetro',
+        'Fonendoscopio',
+      ],
+      correcta: 1,
+    },
+
+    {
+      id: 5,
+      tema: 'Oxigenoterapia',
+      pregunta:
+        'La administración de oxígeno debe realizarse:',
+      opciones: [
+        'Siempre al máximo flujo posible',
+        'Según indicación y protocolo correspondiente',
+        'Sin controlar la saturación',
+        'Sin evaluar al paciente',
+      ],
+      correcta: 1,
+    },
+
+    {
+      id: 6,
+      tema: 'Curaciones',
+      pregunta:
+        'Durante una curación se debe observar especialmente:',
+      opciones: [
+        'Signos de infección y características de la herida',
+        'El color de las paredes',
+        'La temperatura del ambiente solamente',
+        'La talla del paciente',
+      ],
+      correcta: 0,
+    },
+
+    {
+      id: 7,
+      tema: 'Seguridad',
+      pregunta:
+        'Ante una duda respecto a una indicación de medicamento, lo correcto es:',
+      opciones: [
+        'Administrarlo igualmente',
+        'Cambiar la dosis',
+        'Verificar la indicación antes de administrar',
+        'Preguntar al paciente qué dosis desea',
+      ],
+      correcta: 2,
+    },
+
+    {
+      id: 8,
+      tema: 'Oxigenoterapia',
+      pregunta:
+        '¿Cuál es aproximadamente la concentración de oxígeno del aire ambiental?',
+      opciones: [
+        '10%',
+        '21%',
+        '50%',
+        '100%',
+      ],
+      correcta: 1,
+    },
+
+    {
+      id: 9,
+      tema: 'Procedimientos',
+      pregunta:
+        'Una vez finalizado un procedimiento clínico, es importante:',
+      opciones: [
+        'No registrar nada',
+        'Registrar la atención y los hallazgos correspondientes',
+        'Eliminar todos los registros',
+        'Esperar varios días para registrar',
+      ],
+      correcta: 1,
+    },
+
+    {
+      id: 10,
+      tema: 'Paciente',
+      pregunta:
+        'Antes de realizar un procedimiento se debe:',
+      opciones: [
+        'Identificar correctamente al paciente',
+        'Evitar explicar el procedimiento',
+        'Omitir la higiene de manos',
+        'Comenzar inmediatamente',
+      ],
+      correcta: 0,
+    },
+  ]
+
+  const [preguntaActual, setPreguntaActual] = useState(0)
+  const [respuestasQuiz, setRespuestasQuiz] = useState([])
+  const [quizTerminado, setQuizTerminado] = useState(false)
+
+  const [historialQuiz, setHistorialQuiz] = useState(() => {
+    try {
+      const guardado = localStorage.getItem(
+        'nurseassist_historial_quiz'
+      )
+
+      return guardado ? JSON.parse(guardado) : []
+    } catch {
+      return []
+    }
+  })
+
+  // =========================================================
+  // SESIÓN SUPABASE
   // =========================================================
 
   useEffect(() => {
@@ -83,6 +245,17 @@ function App() {
       subscription.unsubscribe()
     }
   }, [])
+
+  // =========================================================
+  // GUARDAR HISTORIAL
+  // =========================================================
+
+  useEffect(() => {
+    localStorage.setItem(
+      'nurseassist_historial_quiz',
+      JSON.stringify(historialQuiz)
+    )
+  }, [historialQuiz])
 
   // =========================================================
   // CERRAR SESIÓN
@@ -371,21 +544,39 @@ function App() {
       tipo: 'Herramientas',
       pagina: 'calculadora',
     },
-{
-  nombre: 'Calculadora de PAM',
-  descripcion: 'Presión arterial media',
-  icono: '🩺',
-  tipo: 'Herramientas',
-  pagina: 'pam',
-},
 
-{
-  nombre: 'Calculadora de índice de masa corporal',
-  descripcion: 'Cálculo de IMC según peso y altura',
-  icono: '⚖️',
-  tipo: 'Herramientas',
-  pagina: 'imc',
-},
+    {
+      nombre: 'Calculadora de PAM',
+      descripcion: 'Presión arterial media',
+      icono: '🩺',
+      tipo: 'Herramientas',
+      pagina: 'pam',
+    },
+
+    {
+      nombre: 'Calculadora de índice de masa corporal',
+      descripcion: 'Cálculo de IMC según peso y altura',
+      icono: '⚖️',
+      tipo: 'Herramientas',
+      pagina: 'imc',
+    },
+
+    {
+      nombre: 'Cuestionarios',
+      descripcion: 'Practica y comprueba tus conocimientos',
+      icono: '🧠',
+      tipo: 'Evaluación',
+      pagina: 'cuestionarios',
+    },
+
+    {
+      nombre: 'Mi progreso',
+      descripcion: 'Revisa tus puntajes y resultados',
+      icono: '🏆',
+      tipo: 'Evaluación',
+      pagina: 'progreso',
+    },
+
     {
       nombre: 'RCP',
       descripcion: 'Reanimación cardiopulmonar',
@@ -468,7 +659,7 @@ function App() {
         })
 
   // =========================================================
-  // DATOS DEL USUARIO
+  // DATOS USUARIO
   // =========================================================
 
   const nombreUsuario =
@@ -480,7 +671,62 @@ function App() {
   const correoUsuario = usuarioSesion?.email || ''
 
   // =========================================================
-  // PANTALLA DE CARGA
+  // FUNCIONES CUESTIONARIO
+  // =========================================================
+
+  const iniciarQuiz = () => {
+    setPreguntaActual(0)
+    setRespuestasQuiz([])
+    setQuizTerminado(false)
+    setPagina('cuestionarios')
+  }
+
+  const responderPregunta = (indiceRespuesta) => {
+    const nuevasRespuestas = [
+      ...respuestasQuiz,
+      indiceRespuesta,
+    ]
+
+    setRespuestasQuiz(nuevasRespuestas)
+
+    if (preguntaActual === preguntas.length - 1) {
+      const correctas = nuevasRespuestas.filter(
+        (respuesta, index) =>
+          respuesta === preguntas[index].correcta
+      ).length
+
+      const porcentaje = Math.round(
+        (correctas / preguntas.length) * 100
+      )
+
+      const nuevoResultado = {
+        fecha: new Date().toLocaleString('es-CL'),
+        correctas,
+        total: preguntas.length,
+        porcentaje,
+      }
+
+      setHistorialQuiz((actual) => [
+        nuevoResultado,
+        ...actual,
+      ])
+
+      setQuizTerminado(true)
+    } else {
+      setPreguntaActual((actual) => actual + 1)
+    }
+  }
+
+  const obtenerNivel = (porcentaje) => {
+    if (porcentaje < 60) return '🔴 Necesita reforzar'
+    if (porcentaje < 70) return '🟠 En progreso'
+    if (porcentaje < 80) return '🟡 Aceptable'
+    if (porcentaje < 90) return '🟢 Buen dominio'
+    return '🏆 Dominio excelente'
+  }
+
+  // =========================================================
+  // CARGANDO
   // =========================================================
 
   if (cargandoSesion) {
@@ -505,30 +751,31 @@ function App() {
     )
   }
 
- // =========================================================
-// RECUPERACIÓN DE CONTRASEÑA
-// =========================================================
-
-if (window.location.pathname === '/reset-password') {
-  return <ResetPassword />
-}
-
-// =========================================================
-// LOGIN
-// =========================================================
-
-if (!usuarioSesion) {
-  return (
-    <Login
-      onLogin={(usuario) => {
-        setUsuarioSesion(usuario)
-        setPagina('inicio')
-      }}
-    />
-  )
-}
   // =========================================================
-  // PÁGINA CALCULADORA DE DOSIS
+  // RECUPERACIÓN DE CONTRASEÑA
+  // =========================================================
+
+  if (window.location.pathname === '/reset-password') {
+    return <ResetPassword />
+  }
+
+  // =========================================================
+  // LOGIN
+  // =========================================================
+
+  if (!usuarioSesion) {
+    return (
+      <Login
+        onLogin={(usuario) => {
+          setUsuarioSesion(usuario)
+          setPagina('inicio')
+        }}
+      />
+    )
+  }
+
+  // =========================================================
+  // CALCULADORA DOSIS
   // =========================================================
 
   if (pagina === 'calculadora') {
@@ -540,54 +787,37 @@ if (!usuarioSesion) {
       </div>
     )
   }
-if (pagina === 'pam') {
-  return (
-    <div className="app">
-      <CalculadoraPAM
-        onVolver={() => setPagina('inicio')}
-      />
-    </div>
-  )
-}
 
-if (pagina === 'imc') {
-  return (
-    <div className="app">
-      <CalculadoraIMC
-        onVolver={() => setPagina('inicio')}
-      />
-    </div>
-  )
-}
   // =========================================================
-// PÁGINA CALCULADORA DE PAM
-// =========================================================
-
-if (pagina === 'pam') {
-  return (
-    <div className="app">
-      <CalculadoraPAM
-        onVolver={() => setPagina('inicio')}
-      />
-    </div>
-  )
-}
-
-// =========================================================
-// PÁGINA CALCULADORA DE IMC
-// =========================================================
-
-if (pagina === 'imc') {
-  return (
-    <div className="app">
-      <CalculadoraIMC
-        onVolver={() => setPagina('inicio')}
-      />
-    </div>
-  )
-}
+  // CALCULADORA PAM
   // =========================================================
-  // PÁGINA SIGNOS VITALES
+
+  if (pagina === 'pam') {
+    return (
+      <div className="app">
+        <CalculadoraPAM
+          onVolver={() => setPagina('inicio')}
+        />
+      </div>
+    )
+  }
+
+  // =========================================================
+  // CALCULADORA IMC
+  // =========================================================
+
+  if (pagina === 'imc') {
+    return (
+      <div className="app">
+        <CalculadoraIMC
+          onVolver={() => setPagina('inicio')}
+        />
+      </div>
+    )
+  }
+
+  // =========================================================
+  // SIGNOS VITALES
   // =========================================================
 
   if (pagina === 'signosVitales') {
@@ -605,7 +835,7 @@ if (pagina === 'imc') {
   }
 
   // =========================================================
-  // PÁGINA ENTREGA DE TURNO
+  // ENTREGA DE TURNO
   // =========================================================
 
   if (pagina === 'turno') {
@@ -619,7 +849,7 @@ if (pagina === 'imc') {
   }
 
   // =========================================================
-  // PÁGINA PERFIL
+  // PERFIL
   // =========================================================
 
   if (pagina === 'perfil') {
@@ -680,16 +910,305 @@ if (pagina === 'imc') {
   }
 
   // =========================================================
-  // PÁGINA PROCEDIMIENTOS
+  // CUESTIONARIOS
+  // =========================================================
+
+  if (pagina === 'cuestionarios') {
+    if (quizTerminado) {
+      const correctas = respuestasQuiz.filter(
+        (respuesta, index) =>
+          respuesta === preguntas[index].correcta
+      ).length
+
+      const porcentaje = Math.round(
+        (correctas / preguntas.length) * 100
+      )
+
+      return (
+        <div className="app">
+          <header className="header">
+            <div>
+              <h1>🧠 Cuestionario</h1>
+              <p>Resultado</p>
+            </div>
+
+            <button
+              type="button"
+              className="back-button"
+              onClick={() => setPagina('inicio')}
+            >
+              ← Volver
+            </button>
+          </header>
+
+          <main className="content">
+            <section className="welcome">
+              <h2>🎉 Cuestionario terminado</h2>
+
+              <p
+                style={{
+                  fontSize: '42px',
+                  fontWeight: '800',
+                  margin: '20px 0',
+                }}
+              >
+                {porcentaje}%
+              </p>
+
+              <p>
+                <strong>
+                  {correctas} correctas
+                </strong>{' '}
+                de {preguntas.length}
+              </p>
+
+              <p
+                style={{
+                  fontSize: '22px',
+                  fontWeight: '700',
+                }}
+              >
+                {obtenerNivel(porcentaje)}
+              </p>
+            </section>
+
+            <div className="medicamento-detalle">
+              <div className="detalle-item">
+                <strong>📊 Resultado</strong>
+
+                <p>
+                  Respondiste correctamente {correctas} de{' '}
+                  {preguntas.length} preguntas.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="boton-login"
+                onClick={iniciarQuiz}
+              >
+                🔄 INTENTAR NUEVAMENTE
+              </button>
+
+              <button
+                type="button"
+                className="back-button"
+                style={{
+                  width: '100%',
+                  marginTop: '12px',
+                }}
+                onClick={() => setPagina('progreso')}
+              >
+                🏆 VER MI PROGRESO
+              </button>
+            </div>
+          </main>
+        </div>
+      )
+    }
+
+    const pregunta = preguntas[preguntaActual]
+
+    return (
+      <div className="app">
+        <header className="header">
+          <div>
+            <h1>🧠 Cuestionarios</h1>
+            <p>
+              Pregunta {preguntaActual + 1} de{' '}
+              {preguntas.length}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => setPagina('inicio')}
+          >
+            ← Salir
+          </button>
+        </header>
+
+        <main className="content">
+          <section className="welcome">
+            <h2>{pregunta.tema}</h2>
+
+            <p>
+              Comprueba tus conocimientos.
+            </p>
+          </section>
+
+          <div className="medicamento-detalle">
+            <h2>{pregunta.pregunta}</h2>
+
+            <div
+              style={{
+                display: 'grid',
+                gap: '12px',
+                marginTop: '20px',
+              }}
+            >
+              {pregunta.opciones.map(
+                (opcion, index) => (
+                  <button
+                    key={opcion}
+                    type="button"
+                    className="card"
+                    onClick={() =>
+                      responderPregunta(index)
+                    }
+                  >
+                    <strong>
+                      {String.fromCharCode(65 + index)}.{' '}
+                      {opcion}
+                    </strong>
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // =========================================================
+  // PROGRESO
+  // =========================================================
+
+  if (pagina === 'progreso') {
+    const promedio =
+      historialQuiz.length > 0
+        ? Math.round(
+            historialQuiz.reduce(
+              (total, resultado) =>
+                total + resultado.porcentaje,
+              0
+            ) / historialQuiz.length
+          )
+        : 0
+
+    return (
+      <div className="app">
+        <header className="header">
+          <div>
+            <h1>🏆 Mi progreso</h1>
+            <p>Tus resultados en NurseAssist</p>
+          </div>
+
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => setPagina('inicio')}
+          >
+            ← Volver
+          </button>
+        </header>
+
+        <main className="content">
+          <section className="welcome">
+            <h2>📊 Tu progreso</h2>
+
+            <p
+              style={{
+                fontSize: '36px',
+                fontWeight: '800',
+              }}
+            >
+              {promedio}%
+            </p>
+
+            <p>
+              Promedio general
+            </p>
+
+            <p
+              style={{
+                fontSize: '20px',
+                fontWeight: '700',
+              }}
+            >
+              {obtenerNivel(promedio)}
+            </p>
+          </section>
+
+          <div className="medicamento-detalle">
+            <div className="detalle-item">
+              <strong>📝 Cuestionarios realizados</strong>
+
+              <p>{historialQuiz.length}</p>
+            </div>
+
+            {historialQuiz.length === 0 ? (
+              <div className="detalle-item">
+                <strong>📚 Todavía no tienes resultados</strong>
+
+                <p>
+                  Realiza tu primer cuestionario para
+                  comenzar a registrar tu progreso.
+                </p>
+              </div>
+            ) : (
+              <>
+                <h3>Últimos resultados</h3>
+
+                {historialQuiz
+                  .slice(0, 10)
+                  .map((resultado, index) => (
+                    <div
+                      className="detalle-item"
+                      key={`${resultado.fecha}-${index}`}
+                    >
+                      <strong>
+                        {resultado.porcentaje >= 80
+                          ? '🟢'
+                          : resultado.porcentaje >= 70
+                            ? '🟡'
+                            : resultado.porcentaje >= 60
+                              ? '🟠'
+                              : '🔴'}{' '}
+                        {resultado.porcentaje}%
+                      </strong>
+
+                      <p>
+                        {resultado.correctas} de{' '}
+                        {resultado.total} correctas
+                      </p>
+
+                      <small>
+                        {resultado.fecha}
+                      </small>
+                    </div>
+                  ))}
+              </>
+            )}
+
+            <button
+              type="button"
+              className="boton-login"
+              onClick={iniciarQuiz}
+            >
+              🧠 HACER CUESTIONARIO
+            </button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // =========================================================
+  // PROCEDIMIENTOS
   // =========================================================
 
   if (pagina === 'procedimientos') {
-    const procedimientosFiltrados = procedimientos.filter(
-      (procedimiento) =>
+    const procedimientosFiltrados =
+      procedimientos.filter((procedimiento) =>
         procedimiento.nombre
           .toLowerCase()
-          .includes(busquedaProcedimiento.toLowerCase())
-    )
+          .includes(
+            busquedaProcedimiento.toLowerCase()
+          )
+      )
 
     return (
       <div className="app">
@@ -714,7 +1233,9 @@ if (pagina === 'imc') {
         <main className="content">
           <section className="welcome">
             <h2>Procedimientos 🩺</h2>
-            <p>Busca y selecciona un procedimiento.</p>
+            <p>
+              Busca y selecciona un procedimiento.
+            </p>
           </section>
 
           <div className="buscador-medicamentos">
@@ -725,7 +1246,9 @@ if (pagina === 'imc') {
               placeholder="Buscar procedimiento..."
               value={busquedaProcedimiento}
               onChange={(e) =>
-                setBusquedaProcedimiento(e.target.value)
+                setBusquedaProcedimiento(
+                  e.target.value
+                )
               }
             />
           </div>
@@ -733,29 +1256,39 @@ if (pagina === 'imc') {
           <h3>Procedimientos disponibles</h3>
 
           <section className="cards">
-            {procedimientosFiltrados.map((procedimiento) => (
-              <button
-                type="button"
-                className="card"
-                key={procedimiento.id}
-                onClick={() => {
-                  if (procedimiento.id === 'signos') {
-                    setProcedimientoSeleccionado(null)
-                    setPagina('signosVitales')
-                  } else {
-                    setProcedimientoSeleccionado(procedimiento)
-                  }
-                }}
-              >
-                <span className="card-icon">
-                  {procedimiento.icono}
-                </span>
+            {procedimientosFiltrados.map(
+              (procedimiento) => (
+                <button
+                  type="button"
+                  className="card"
+                  key={procedimiento.id}
+                  onClick={() => {
+                    if (
+                      procedimiento.id === 'signos'
+                    ) {
+                      setProcedimientoSeleccionado(null)
+                      setPagina('signosVitales')
+                    } else {
+                      setProcedimientoSeleccionado(
+                        procedimiento
+                      )
+                    }
+                  }}
+                >
+                  <span className="card-icon">
+                    {procedimiento.icono}
+                  </span>
 
-                <strong>{procedimiento.nombre}</strong>
+                  <strong>
+                    {procedimiento.nombre}
+                  </strong>
 
-                <small>{procedimiento.descripcion}</small>
-              </button>
-            ))}
+                  <small>
+                    {procedimiento.descripcion}
+                  </small>
+                </button>
+              )
+            )}
           </section>
 
           {procedimientoSeleccionado && (
@@ -767,12 +1300,16 @@ if (pagina === 'imc') {
 
               <div className="detalle-item">
                 <strong>🎯 Objetivo</strong>
-                <p>{procedimientoSeleccionado.objetivo}</p>
+                <p>
+                  {procedimientoSeleccionado.objetivo}
+                </p>
               </div>
 
               <div className="detalle-item">
                 <strong>🧰 Materiales</strong>
-                <p>{procedimientoSeleccionado.materiales}</p>
+                <p>
+                  {procedimientoSeleccionado.materiales}
+                </p>
               </div>
 
               <div className="detalle-item">
@@ -788,7 +1325,9 @@ if (pagina === 'imc') {
                 <ol>
                   {procedimientoSeleccionado.pasos.map(
                     (paso, index) => (
-                      <li key={index}>{paso}</li>
+                      <li key={index}>
+                        {paso}
+                      </li>
                     )
                   )}
                 </ol>
@@ -798,13 +1337,17 @@ if (pagina === 'imc') {
                 <strong>⚠️ Consideraciones</strong>
 
                 <p>
-                  {procedimientoSeleccionado.consideraciones}
+                  {
+                    procedimientoSeleccionado.consideraciones
+                  }
                 </p>
               </div>
 
               {procedimientoSeleccionado.sistemasBajoFlujo && (
                 <div className="detalle-item">
-                  <strong>🟢 Sistemas de bajo flujo</strong>
+                  <strong>
+                    🟢 Sistemas de bajo flujo
+                  </strong>
 
                   <div className="tabla-oxigenoterapia">
                     <div className="tabla-fila tabla-encabezado">
@@ -819,9 +1362,17 @@ if (pagina === 'imc') {
                           className="tabla-fila"
                           key={index}
                         >
-                          <div>{sistema.dispositivo}</div>
-                          <div>{sistema.flujo}</div>
-                          <div>{sistema.fio2}</div>
+                          <div>
+                            {sistema.dispositivo}
+                          </div>
+
+                          <div>
+                            {sistema.flujo}
+                          </div>
+
+                          <div>
+                            {sistema.fio2}
+                          </div>
                         </div>
                       )
                     )}
@@ -831,7 +1382,9 @@ if (pagina === 'imc') {
 
               {procedimientoSeleccionado.sistemasAltoFlujo && (
                 <div className="detalle-item">
-                  <strong>🔵 Sistemas de alto flujo</strong>
+                  <strong>
+                    🔵 Sistemas de alto flujo
+                  </strong>
 
                   <div className="tabla-oxigenoterapia">
                     <div className="tabla-fila tabla-encabezado">
@@ -846,9 +1399,17 @@ if (pagina === 'imc') {
                           className="tabla-fila"
                           key={index}
                         >
-                          <div>{sistema.dispositivo}</div>
-                          <div>{sistema.flujo}</div>
-                          <div>{sistema.fio2}</div>
+                          <div>
+                            {sistema.dispositivo}
+                          </div>
+
+                          <div>
+                            {sistema.flujo}
+                          </div>
+
+                          <div>
+                            {sistema.fio2}
+                          </div>
                         </div>
                       )
                     )}
@@ -865,25 +1426,12 @@ if (pagina === 'imc') {
                   <ul className="cuidados-lista">
                     {procedimientoSeleccionado.cuidados.map(
                       (cuidado, index) => (
-                        <li key={index}>{cuidado}</li>
+                        <li key={index}>
+                          {cuidado}
+                        </li>
                       )
                     )}
                   </ul>
-                </div>
-              )}
-
-              {procedimientoSeleccionado.sistemasBajoFlujo && (
-                <div className="detalle-item">
-                  <strong>⚠️ Importante</strong>
-
-                  <p>
-                    La FiO₂ ambiental es aproximadamente 21%.
-                    Los valores de flujo y FiO₂ son aproximados
-                    y pueden variar según el dispositivo, ajuste,
-                    condición clínica e indicación. Seguir siempre
-                    el protocolo institucional y la indicación del
-                    equipo de salud.
-                  </p>
                 </div>
               )}
             </div>
@@ -894,23 +1442,28 @@ if (pagina === 'imc') {
   }
 
   // =========================================================
-  // PÁGINA MEDICAMENTOS
+  // MEDICAMENTOS
   // =========================================================
 
   if (pagina === 'medicamentos') {
-    const medicamentosFiltrados = medicamentos.filter(
-      (medicamento) => {
-        const coincideBusqueda = medicamento.nombre
-          .toLowerCase()
-          .includes(busquedaMedicamento.toLowerCase())
+    const medicamentosFiltrados =
+      medicamentos.filter((medicamento) => {
+        const coincideBusqueda =
+          medicamento.nombre
+            .toLowerCase()
+            .includes(
+              busquedaMedicamento.toLowerCase()
+            )
 
         const coincideGrupo =
           filtroGrupo === 'Todos' ||
           medicamento.grupo === filtroGrupo
 
-        return coincideBusqueda && coincideGrupo
-      }
-    )
+        return (
+          coincideBusqueda &&
+          coincideGrupo
+        )
+      })
 
     return (
       <div className="app">
@@ -935,7 +1488,9 @@ if (pagina === 'imc') {
         <main className="content">
           <section className="welcome">
             <h2>Medicamentos 💊</h2>
-            <p>Busca información sobre medicamentos.</p>
+            <p>
+              Busca información sobre medicamentos.
+            </p>
           </section>
 
           <div className="buscador-medicamentos">
@@ -946,7 +1501,9 @@ if (pagina === 'imc') {
               placeholder="Buscar medicamento..."
               value={busquedaMedicamento}
               onChange={(e) =>
-                setBusquedaMedicamento(e.target.value)
+                setBusquedaMedicamento(
+                  e.target.value
+                )
               }
             />
           </div>
@@ -959,7 +1516,9 @@ if (pagina === 'imc') {
                   ? 'filtro activo'
                   : 'filtro'
               }
-              onClick={() => setFiltroGrupo('Todos')}
+              onClick={() =>
+                setFiltroGrupo('Todos')
+              }
             >
               Todos
             </button>
@@ -967,7 +1526,8 @@ if (pagina === 'imc') {
             {[
               ...new Set(
                 medicamentos.map(
-                  (medicamento) => medicamento.grupo
+                  (medicamento) =>
+                    medicamento.grupo
                 )
               ),
             ].map((grupo) => (
@@ -979,7 +1539,9 @@ if (pagina === 'imc') {
                     ? 'filtro activo'
                     : 'filtro'
                 }
-                onClick={() => setFiltroGrupo(grupo)}
+                onClick={() =>
+                  setFiltroGrupo(grupo)
+                }
               >
                 {grupo}
               </button>
@@ -993,7 +1555,9 @@ if (pagina === 'imc') {
               </h2>
 
               <div className="detalle-item">
-                <strong>📚 Grupo farmacológico</strong>
+                <strong>
+                  📚 Grupo farmacológico
+                </strong>
 
                 <p>
                   {medicamentoSeleccionado.grupo ||
@@ -1011,7 +1575,9 @@ if (pagina === 'imc') {
               </div>
 
               <div className="detalle-item">
-                <strong>⚙️ Mecanismo de acción</strong>
+                <strong>
+                  ⚙️ Mecanismo de acción
+                </strong>
 
                 <p>
                   {medicamentoSeleccionado.mecanismo ||
@@ -1040,7 +1606,9 @@ if (pagina === 'imc') {
               </div>
 
               <div className="detalle-item">
-                <strong>⚠️ Reacciones adversas</strong>
+                <strong>
+                  ⚠️ Reacciones adversas
+                </strong>
 
                 <p>
                   {medicamentoSeleccionado.reacciones ||
@@ -1054,22 +1622,32 @@ if (pagina === 'imc') {
           <h3>Medicamentos disponibles</h3>
 
           <section className="cards">
-            {medicamentosFiltrados.map((medicamento) => (
-              <button
-                type="button"
-                className="card"
-                key={medicamento.nombre}
-                onClick={() =>
-                  setMedicamentoSeleccionado(medicamento)
-                }
-              >
-                <span className="card-icon">💊</span>
+            {medicamentosFiltrados.map(
+              (medicamento) => (
+                <button
+                  type="button"
+                  className="card"
+                  key={medicamento.nombre}
+                  onClick={() =>
+                    setMedicamentoSeleccionado(
+                      medicamento
+                    )
+                  }
+                >
+                  <span className="card-icon">
+                    💊
+                  </span>
 
-                <strong>{medicamento.nombre}</strong>
+                  <strong>
+                    {medicamento.nombre}
+                  </strong>
 
-                <small>{medicamento.grupo}</small>
-              </button>
-            ))}
+                  <small>
+                    {medicamento.grupo}
+                  </small>
+                </button>
+              )
+            )}
           </section>
 
           {medicamentosFiltrados.length === 0 && (
@@ -1077,8 +1655,8 @@ if (pagina === 'imc') {
               <h2>🔍 Sin resultados</h2>
 
               <p>
-                No encontramos medicamentos que coincidan con
-                tu búsqueda.
+                No encontramos medicamentos que
+                coincidan con tu búsqueda.
               </p>
             </div>
           )}
@@ -1090,8 +1668,6 @@ if (pagina === 'imc') {
   // =========================================================
   // PÁGINAS TEMPORALES
   // =========================================================
-  // IMPORTANTE:
-  // "turno" ya no está aquí porque ahora utiliza EntregaTurno.jsx.
 
   if (
     pagina === 'urgencias' ||
@@ -1140,7 +1716,9 @@ if (pagina === 'imc') {
           <button
             type="button"
             className="back-button"
-            onClick={() => setPagina('inicio')}
+            onClick={() =>
+              setPagina('inicio')
+            }
           >
             ← Volver al inicio
           </button>
@@ -1189,7 +1767,9 @@ if (pagina === 'imc') {
           <button
             type="button"
             aria-label="Perfil"
-            onClick={() => setPagina('perfil')}
+            onClick={() =>
+              setPagina('perfil')
+            }
           >
             👤
           </button>
@@ -1202,7 +1782,9 @@ if (pagina === 'imc') {
             Hola, {nombreUsuario} 👋
           </h2>
 
-          <p>¿Qué necesitas consultar hoy?</p>
+          <p>
+            ¿Qué necesitas consultar hoy?
+          </p>
         </section>
 
         <div className="search">
@@ -1213,64 +1795,77 @@ if (pagina === 'imc') {
             placeholder="Buscar en NurseAssist..."
             value={busquedaGeneral}
             onChange={(e) =>
-              setBusquedaGeneral(e.target.value)
+              setBusquedaGeneral(
+                e.target.value
+              )
             }
           />
         </div>
 
-        {/* RESULTADOS DE BÚSQUEDA GENERAL */}
+        {/* RESULTADOS DE BÚSQUEDA */}
 
         {busquedaGeneral.trim() !== '' && (
           <div className="cards">
             {resultadosFiltrados.length > 0 ? (
-              resultadosFiltrados.map((resultado, index) => (
-                <button
-                  type="button"
-                  className="card"
-                  key={`${resultado.nombre}-${index}`}
-                  onClick={() => {
-                    setBusquedaGeneral('')
+              resultadosFiltrados.map(
+                (resultado, index) => (
+                  <button
+                    type="button"
+                    className="card"
+                    key={`${resultado.nombre}-${index}`}
+                    onClick={() => {
+                      setBusquedaGeneral('')
 
-                    if (
-                      resultado.pagina === 'medicamentos'
-                    ) {
-                      setBusquedaMedicamento('')
-                      setFiltroGrupo('Todos')
-                      setMedicamentoSeleccionado(
-                        resultado.dato
-                      )
-                      setPagina('medicamentos')
-                    } else if (
-                      resultado.pagina === 'procedimientos'
-                    ) {
-                      setBusquedaProcedimiento('')
-                      setProcedimientoSeleccionado(
-                        resultado.dato
-                      )
-                      setPagina('procedimientos')
-                    } else {
-                      setPagina(resultado.pagina)
-                    }
-                  }}
-                >
-                  <span className="card-icon">
-                    {resultado.icono}
-                  </span>
+                      if (
+                        resultado.pagina ===
+                        'medicamentos'
+                      ) {
+                        setBusquedaMedicamento('')
+                        setFiltroGrupo('Todos')
+                        setMedicamentoSeleccionado(
+                          resultado.dato
+                        )
+                        setPagina('medicamentos')
+                      } else if (
+                        resultado.pagina ===
+                        'procedimientos'
+                      ) {
+                        setBusquedaProcedimiento('')
+                        setProcedimientoSeleccionado(
+                          resultado.dato
+                        )
+                        setPagina('procedimientos')
+                      } else {
+                        setPagina(
+                          resultado.pagina
+                        )
+                      }
+                    }}
+                  >
+                    <span className="card-icon">
+                      {resultado.icono}
+                    </span>
 
-                  <strong>{resultado.nombre}</strong>
+                    <strong>
+                      {resultado.nombre}
+                    </strong>
 
-                  <small>
-                    {resultado.tipo} ·{' '}
-                    {resultado.descripcion}
-                  </small>
-                </button>
-              ))
+                    <small>
+                      {resultado.tipo} ·{' '}
+                      {resultado.descripcion}
+                    </small>
+                  </button>
+                )
+              )
             ) : (
               <div className="medicamento-detalle">
-                <h2>🔍 Sin resultados</h2>
+                <h2>
+                  🔍 Sin resultados
+                </h2>
 
                 <p>
-                  No encontramos información que coincida con "
+                  No encontramos información que
+                  coincida con "
                   {busquedaGeneral}".
                 </p>
               </div>
@@ -1298,86 +1893,16 @@ if (pagina === 'imc') {
                   setPagina('medicamentos')
                 }}
               >
-                <span className="card-icon">💊</span>
+                <span className="card-icon">
+                  💊
+                </span>
 
-                <strong>Medicamentos</strong>
+                <strong>
+                  Medicamentos
+                </strong>
 
                 <small>
                   Información farmacológica
-                </small>
-              </button>
-
-              {/* CALCULADORA */}
-
-              <button
-                type="button"
-                className="card"
-                onClick={() => setPagina('calculadora')}
-              >
-                <span className="card-icon">🧮</span>
-
-                <strong>Calculadora de dosis</strong>
-
-                <small>
-                  Cálculo de dosis, volumen y comprimidos
-                </small>
-              </button>
-<button
-  type="button"
-  className="card"
-  onClick={() => setPagina('pam')}
->
-  <span className="card-icon">🩺</span>
-
-  <strong>Calculadora de PAM</strong>
-
-  <small>
-    Calcula la presión arterial media
-  </small>
-</button>
-
-<button
-  type="button"
-  className="card"
-  onClick={() => setPagina('imc')}
->
-  <span className="card-icon">⚖️</span>
-
-  <strong>Calculadora de IMC</strong>
-
-  <small>
-    Calcula el índice de masa corporal
-  </small>
-</button>
-              {/* URGENCIAS */}
-
-              <button
-                type="button"
-                className="card"
-                onClick={() => setPagina('urgencias')}
-              >
-                <span className="card-icon">🚨</span>
-
-                <strong>Urgencias</strong>
-
-                <small>
-                  Protocolos y emergencias
-                </small>
-              </button>
-
-              {/* ENTREGA DE TURNO */}
-
-              <button
-                type="button"
-                className="card"
-                onClick={() => setPagina('turno')}
-              >
-                <span className="card-icon">📋</span>
-
-                <strong>Entrega de turno</strong>
-
-                <small>
-                  Organiza y entrega información
                 </small>
               </button>
 
@@ -1392,12 +1917,168 @@ if (pagina === 'imc') {
                   setPagina('procedimientos')
                 }}
               >
-                <span className="card-icon">🩺</span>
+                <span className="card-icon">
+                  🩺
+                </span>
 
-                <strong>Procedimientos</strong>
+                <strong>
+                  Procedimientos
+                </strong>
 
                 <small>
                   Guías paso a paso
+                </small>
+              </button>
+
+              {/* CUESTIONARIOS */}
+
+              <button
+                type="button"
+                className="card"
+                onClick={iniciarQuiz}
+              >
+                <span className="card-icon">
+                  🧠
+                </span>
+
+                <strong>
+                  Cuestionarios
+                </strong>
+
+                <small>
+                  Practica y comprueba tus conocimientos
+                </small>
+              </button>
+
+              {/* PROGRESO */}
+
+              <button
+                type="button"
+                className="card"
+                onClick={() =>
+                  setPagina('progreso')
+                }
+              >
+                <span className="card-icon">
+                  🏆
+                </span>
+
+                <strong>
+                  Mi progreso
+                </strong>
+
+                <small>
+                  Puntajes y resultados
+                </small>
+              </button>
+
+              {/* CALCULADORA DOSIS */}
+
+              <button
+                type="button"
+                className="card"
+                onClick={() =>
+                  setPagina('calculadora')
+                }
+              >
+                <span className="card-icon">
+                  🧮
+                </span>
+
+                <strong>
+                  Calculadora de dosis
+                </strong>
+
+                <small>
+                  Dosis, volumen y comprimidos
+                </small>
+              </button>
+
+              {/* PAM */}
+
+              <button
+                type="button"
+                className="card"
+                onClick={() =>
+                  setPagina('pam')
+                }
+              >
+                <span className="card-icon">
+                  🩺
+                </span>
+
+                <strong>
+                  Calculadora de PAM
+                </strong>
+
+                <small>
+                  Presión arterial media
+                </small>
+              </button>
+
+              {/* IMC */}
+
+              <button
+                type="button"
+                className="card"
+                onClick={() =>
+                  setPagina('imc')
+                }
+              >
+                <span className="card-icon">
+                  ⚖️
+                </span>
+
+                <strong>
+                  Calculadora de IMC
+                </strong>
+
+                <small>
+                  Índice de masa corporal
+                </small>
+              </button>
+
+              {/* URGENCIAS */}
+
+              <button
+                type="button"
+                className="card"
+                onClick={() =>
+                  setPagina('urgencias')
+                }
+              >
+                <span className="card-icon">
+                  🚨
+                </span>
+
+                <strong>
+                  Urgencias
+                </strong>
+
+                <small>
+                  Protocolos y emergencias
+                </small>
+              </button>
+
+              {/* ENTREGA DE TURNO */}
+
+              <button
+                type="button"
+                className="card"
+                onClick={() =>
+                  setPagina('turno')
+                }
+              >
+                <span className="card-icon">
+                  📋
+                </span>
+
+                <strong>
+                  Entrega de turno
+                </strong>
+
+                <small>
+                  Organiza información
                 </small>
               </button>
 
@@ -1406,13 +2087,21 @@ if (pagina === 'imc') {
               <button
                 type="button"
                 className="card"
-                onClick={() => setPagina('guias')}
+                onClick={() =>
+                  setPagina('guias')
+                }
               >
-                <span className="card-icon">📚</span>
+                <span className="card-icon">
+                  📚
+                </span>
 
-                <strong>Guías</strong>
+                <strong>
+                  Guías
+                </strong>
 
-                <small>Material de estudio</small>
+                <small>
+                  Material de consulta
+                </small>
               </button>
 
               {/* FAVORITOS */}
@@ -1420,11 +2109,17 @@ if (pagina === 'imc') {
               <button
                 type="button"
                 className="card"
-                onClick={() => setPagina('favoritos')}
+                onClick={() =>
+                  setPagina('favoritos')
+                }
               >
-                <span className="card-icon">⭐</span>
+                <span className="card-icon">
+                  ⭐
+                </span>
 
-                <strong>Favoritos</strong>
+                <strong>
+                  Favoritos
+                </strong>
 
                 <small>
                   Tus contenidos guardados
@@ -1443,7 +2138,11 @@ if (pagina === 'imc') {
       <nav className="bottom-nav">
         <button
           type="button"
-          className={pagina === 'inicio' ? 'active' : ''}
+          className={
+            pagina === 'inicio'
+              ? 'active'
+              : ''
+          }
           onClick={() => {
             setPagina('inicio')
             setBusquedaGeneral('')
@@ -1460,7 +2159,9 @@ if (pagina === 'imc') {
 
             setTimeout(() => {
               document
-                .querySelector('.search input')
+                .querySelector(
+                  '.search input'
+                )
                 ?.focus()
             }, 0)
           }}
@@ -1471,15 +2172,29 @@ if (pagina === 'imc') {
 
         <button
           type="button"
-          onClick={() => setPagina('favoritos')}
+          onClick={() =>
+            setPagina('cuestionarios')
+          }
         >
-          ⭐
-          <span>Guardados</span>
+          🧠
+          <span>Practicar</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setPagina('perfil')}
+          onClick={() =>
+            setPagina('progreso')
+          }
+        >
+          🏆
+          <span>Progreso</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            setPagina('perfil')
+          }
         >
           👤
           <span>Perfil</span>
