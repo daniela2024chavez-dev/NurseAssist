@@ -1,0 +1,308 @@
+.signos-container {
+min-height: 100vh;
+padding: 24px;
+background: #f4f8f9;
+color: #173b43;
+}
+
+/* HEADER */
+
+.signos-header {
+max-width: 1100px;
+margin: 0 auto 24px;
+}
+
+.boton-volver-signos {
+border: none;
+background: white;
+color: #167c80;
+font-size: 15px;
+font-weight: 700;
+padding: 10px 16px;
+border-radius: 12px;
+cursor: pointer;
+margin-bottom: 20px;
+box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+.boton-volver-signos:hover {
+transform: translateX(-2px);
+}
+
+.signos-header-titulo {
+display: flex;
+align-items: center;
+gap: 16px;
+}
+
+.signos-header-titulo > span {
+font-size: 45px;
+}
+
+.signos-header-titulo h1 {
+margin: 0;
+font-size: 32px;
+color: #123f48;
+}
+
+.signos-header-titulo p {
+margin: 5px 0 0;
+color: #6b7d82;
+}
+
+/* SELECTOR */
+
+.selector-etario {
+max-width: 1100px;
+margin: 0 auto 24px;
+}
+
+.selector-etario h2 {
+font-size: 20px;
+margin-bottom: 15px;
+}
+
+.grupos-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 14px;
+}
+
+.grupo-btn {
+border: 2px solid transparent;
+background: white;
+border-radius: 18px;
+padding: 18px 12px;
+cursor: pointer;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 5px;
+min-height: 125px;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+transition: 0.2s ease;
+}
+
+.grupo-btn:hover {
+transform: translateY(-3px);
+border-color: #9bd9d5;
+}
+
+.grupo-activo {
+border-color: #1a9997;
+background: #e9f8f7;
+box-shadow: 0 6px 20px rgba(26, 153, 151, 0.16);
+}
+
+.grupo-icono {
+font-size: 34px;
+}
+
+.grupo-nombre {
+font-size: 15px;
+font-weight: 800;
+color: #16434c;
+}
+
+.grupo-edad {
+font-size: 12px;
+color: #718287;
+}
+
+/* GRUPO SELECCIONADO */
+
+.grupo-seleccionado {
+max-width: 1100px;
+margin: 0 auto 24px;
+padding: 20px;
+border-radius: 18px;
+background: #167c80;
+color: white;
+display: flex;
+align-items: center;
+gap: 15px;
+box-shadow: 0 7px 20px rgba(22, 124, 128, 0.18);
+}
+
+.grupo-seleccionado-icono {
+font-size: 42px;
+}
+
+.grupo-seleccionado h2 {
+margin: 0;
+font-size: 23px;
+}
+
+.grupo-seleccionado p {
+margin: 4px 0 0;
+opacity: 0.9;
+}
+
+/* TABLAS */
+
+.tablas-signos {
+max-width: 1100px;
+margin: 0 auto;
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 18px;
+}
+
+.signo-card {
+background: white;
+border-radius: 18px;
+overflow: hidden;
+box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+border: 1px solid #e4eeee;
+}
+
+.signo-titulo {
+display: flex;
+align-items: center;
+gap: 10px;
+padding: 17px 18px;
+border-bottom: 1px solid #e6eeee;
+background: #f9fcfc;
+}
+
+.signo-icono {
+font-size: 25px;
+}
+
+.signo-titulo h3 {
+margin: 0;
+font-size: 18px;
+color: #174650;
+}
+
+.tabla-responsive {
+overflow-x: auto;
+}
+
+.tabla-signos {
+width: 100%;
+border-collapse: collapse;
+}
+
+.tabla-signos th {
+text-align: left;
+background: #e9f7f6;
+color: #155c61;
+font-size: 13px;
+padding: 11px 14px;
+}
+
+.tabla-signos td {
+padding: 12px 14px;
+border-bottom: 1px solid #edf1f1;
+font-size: 14px;
+vertical-align: top;
+}
+
+.tabla-signos tbody tr:last-child td {
+border-bottom: none;
+}
+
+.tabla-signos td:first-child {
+font-weight: 700;
+color: #254e56;
+}
+
+.tabla-signos td:last-child {
+color: #566c72;
+}
+
+/* NOTA */
+
+.nota-signos {
+max-width: 1100px;
+margin: 24px auto 0;
+padding: 18px 20px;
+border-radius: 16px;
+background: #fff9e8;
+border: 1px solid #f0df9c;
+color: #675526;
+}
+
+.nota-signos strong {
+display: block;
+margin-bottom: 7px;
+}
+
+.nota-signos p {
+margin: 6px 0;
+font-size: 13px;
+line-height: 1.5;
+}
+
+/* TABLET */
+
+@media (max-width: 850px) {
+.grupos-grid {
+grid-template-columns: repeat(2, 1fr);
+}
+
+.tablas-signos {
+grid-template-columns: 1fr;
+}
+}
+
+/* CELULAR */
+
+@media (max-width: 600px) {
+.signos-container {
+padding: 14px;
+}
+
+.signos-header-titulo h1 {
+font-size: 25px;
+}
+
+.signos-header-titulo > span {
+font-size: 35px;
+}
+
+.grupos-grid {
+grid-template-columns: repeat(2, 1fr);
+gap: 10px;
+}
+
+.grupo-btn {
+min-height: 110px;
+padding: 12px 8px;
+}
+
+.grupo-icono {
+font-size: 28px;
+}
+
+.grupo-nombre {
+font-size: 13px;
+}
+
+.grupo-edad {
+font-size: 11px;
+}
+
+.grupo-seleccionado {
+padding: 15px;
+}
+
+.grupo-seleccionado-icono {
+font-size: 32px;
+}
+
+.grupo-seleccionado h2 {
+font-size: 19px;
+}
+
+.signo-titulo h3 {
+font-size: 16px;
+}
+
+.tabla-signos td,
+.tabla-signos th {
+font-size: 13px;
+padding: 10px;
+}
+}

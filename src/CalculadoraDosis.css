@@ -1,0 +1,1245 @@
+﻿/* =====================================================
+   NURSEASSIST - CALCULADORA DE DOSIS
+   DiseÃ±o moderno y responsive
+   ===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+.calculadora-dosis {
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, #eef8fa 0%, #f7fbfc 50%, #eef4f8 100%);
+  color: #183b4b;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* =====================================================
+   BARRA SUPERIOR
+   ===================================================== */
+
+.barra-superior-dosis {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  min-height: 72px;
+  padding: 12px 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+
+  border-bottom: 1px solid #dcebef;
+  box-shadow: 0 4px 18px rgba(24, 59, 75, 0.07);
+}
+
+/* =====================================================
+   BOTÃ“N VOLVER
+   ===================================================== */
+
+.btn-volver {
+  border: none;
+  background: #e7f7f8;
+  color: #087f87;
+
+  padding: 11px 18px;
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-volver:hover {
+  background: #d5f0f2;
+  transform: translateX(-3px);
+  box-shadow: 0 5px 14px rgba(8, 127, 135, 0.14);
+}
+
+.btn-volver:active {
+  transform: scale(0.97);
+}
+
+/* =====================================================
+   NOMBRE DEL MÃ“DULO
+   ===================================================== */
+
+.nombre-modulo {
+  font-size: 18px;
+  font-weight: 800;
+  color: #173f52;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =====================================================
+   MENÃš
+   ===================================================== */
+
+.menu-dosis {
+  width: min(1400px, 94%);
+  margin: 20px auto 0;
+
+  display: flex;
+  gap: 8px;
+
+  padding: 8px;
+
+  overflow-x: auto;
+
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #dcebef;
+  border-radius: 18px;
+
+  box-shadow: 0 7px 25px rgba(24, 59, 75, 0.06);
+
+  scrollbar-width: thin;
+}
+
+.menu-dosis button {
+  flex: 0 0 auto;
+
+  border: none;
+  background: transparent;
+
+  color: #52717e;
+
+  padding: 11px 15px;
+  border-radius: 12px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.menu-dosis button:hover {
+  background: #edf8f9;
+  color: #087f87;
+  transform: translateY(-1px);
+}
+
+.menu-dosis button.activo {
+  background: linear-gradient(135deg, #0b8991, #16a6a8);
+  color: white;
+
+  box-shadow: 0 5px 15px rgba(11, 137, 145, 0.24);
+}
+
+/* =====================================================
+   CONTENEDOR
+   ===================================================== */
+
+.contenedor-dosis {
+  width: min(1200px, 92%);
+  margin: 0 auto;
+  padding: 30px 0 60px;
+}
+
+.contenido {
+  animation: aparecer 0.35s ease;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =====================================================
+   HERO
+   ===================================================== */
+
+.hero-dosis {
+  position: relative;
+  overflow: hidden;
+
+  margin-bottom: 22px;
+  padding: 42px;
+
+  border-radius: 26px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0b6678 0%,
+      #087f87 48%,
+      #13a6a6 100%
+    );
+
+  color: white;
+
+  box-shadow: 0 15px 35px rgba(8, 127, 135, 0.2);
+}
+
+.hero-dosis::before {
+  content: "";
+  position: absolute;
+
+  width: 230px;
+  height: 230px;
+
+  right: -70px;
+  top: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-dosis::after {
+  content: "";
+  position: absolute;
+
+  width: 150px;
+  height: 150px;
+
+  right: 100px;
+  bottom: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.hero-dosis > div {
+  position: relative;
+  z-index: 2;
+
+  max-width: 700px;
+}
+
+.etiqueta {
+  display: inline-block;
+
+  margin-bottom: 10px;
+  padding: 6px 11px;
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.15);
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.hero-dosis h1 {
+  margin: 5px 0 12px;
+
+  font-size: clamp(30px, 5vw, 46px);
+  line-height: 1.1;
+
+  letter-spacing: -1px;
+}
+
+.hero-dosis p {
+  margin: 0;
+
+  max-width: 650px;
+
+  font-size: 16px;
+  line-height: 1.7;
+
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* =====================================================
+   ADVERTENCIA
+   ===================================================== */
+
+.advertencia-dosis {
+  margin: 20px 0;
+
+  padding: 20px 22px;
+
+  border-left: 5px solid #e6a23c;
+  border-radius: 16px;
+
+  background: #fff9ed;
+
+  box-shadow: 0 6px 20px rgba(130, 94, 30, 0.07);
+}
+
+.advertencia-dosis strong {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #9b6717;
+  font-size: 15px;
+}
+
+.advertencia-dosis p {
+  margin: 0;
+
+  color: #735b36;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =====================================================
+   TARJETAS DEL MENÃš
+   ===================================================== */
+
+.tarjetas-menu {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 16px;
+
+  margin-top: 25px;
+}
+
+.tarjetas-menu button {
+  min-height: 165px;
+
+  padding: 22px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  text-align: left;
+
+  border: 1px solid #dcebef;
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.95);
+
+  color: #183b4b;
+
+  cursor: pointer;
+
+  box-shadow: 0 7px 22px rgba(24, 59, 75, 0.06);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.tarjetas-menu button:hover {
+  transform: translateY(-5px);
+
+  border-color: #8dd5d8;
+
+  box-shadow: 0 15px 30px rgba(8, 127, 135, 0.13);
+}
+
+.tarjetas-menu button span {
+  width: 50px;
+  height: 50px;
+
+  margin-bottom: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: #e8f7f8;
+
+  font-size: 25px;
+}
+
+.tarjetas-menu button strong {
+  margin-bottom: 6px;
+
+  font-size: 16px;
+}
+
+.tarjetas-menu button small {
+  color: #6b8490;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* =====================================================
+   TÃTULOS DE SECCIÃ“N
+   ===================================================== */
+
+.titulo-seccion {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+
+  margin-bottom: 24px;
+
+  padding: 8px 0;
+}
+
+.titulo-icono {
+  width: 58px;
+  height: 58px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 17px;
+
+  background: linear-gradient(135deg, #e1f6f7, #cceff1);
+
+  font-size: 27px;
+
+  box-shadow: 0 5px 14px rgba(8, 127, 135, 0.08);
+}
+
+.titulo-seccion h2 {
+  margin: 0 0 5px;
+
+  color: #173f52;
+
+  font-size: 27px;
+  line-height: 1.2;
+}
+
+.titulo-seccion p {
+  margin: 0;
+
+  color: #6b8490;
+
+  font-size: 14px;
+}
+
+/* =====================================================
+   CONCEPTOS
+   ===================================================== */
+
+.conceptos-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(250px, 1fr));
+
+  gap: 16px;
+}
+
+.concepto-card {
+  padding: 22px;
+
+  background: white;
+
+  border: 1px solid #dcebef;
+  border-radius: 18px;
+
+  box-shadow: 0 6px 20px rgba(24, 59, 75, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.concepto-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 12px 25px rgba(24, 59, 75, 0.09);
+}
+
+.concepto-card h3 {
+  margin: 0 0 12px;
+
+  color: #087f87;
+
+  font-size: 17px;
+}
+
+.concepto-card p {
+  color: #607984;
+
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.concepto-card ul {
+  margin: 15px 0 0;
+  padding-left: 18px;
+
+  color: #607984;
+
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* =====================================================
+   CALCULADORAS
+   ===================================================== */
+
+.calculadora-card {
+  margin: 20px 0;
+
+  padding: 27px;
+
+  background: white;
+
+  border: 1px solid #dcebef;
+  border-radius: 22px;
+
+  box-shadow: 0 8px 26px rgba(24, 59, 75, 0.07);
+}
+
+.calculadora-card h3 {
+  margin: 0 0 22px;
+
+  color: #173f52;
+
+  font-size: 20px;
+}
+
+/* =====================================================
+   FORMULARIOS
+   ===================================================== */
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 18px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  color: #355866;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.form-grid input,
+.form-grid select {
+  width: 100%;
+
+  padding: 13px 14px;
+
+  border: 2px solid #e0ecef;
+  border-radius: 12px;
+
+  background: #fbfdfe;
+
+  color: #183b4b;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.form-grid input:focus,
+.form-grid select:focus {
+  border-color: #18a1a5;
+
+  background: white;
+
+  box-shadow: 0 0 0 4px rgba(24, 161, 165, 0.1);
+}
+
+.form-grid input::placeholder {
+  color: #a1b4bb;
+}
+
+/* =====================================================
+   RESULTADO
+   ===================================================== */
+
+.resultado {
+  margin-top: 22px;
+
+  padding: 22px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  border: 1px solid #a9dfe1;
+  border-radius: 18px;
+
+  background:
+    linear-gradient(135deg, #effbfb, #e2f7f7);
+
+  animation: resultadoEntrada 0.3s ease;
+}
+
+@keyframes resultadoEntrada {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.resultado span {
+  margin-bottom: 5px;
+
+  color: #54737e;
+
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.resultado strong {
+  color: #087f87;
+
+  font-size: 30px;
+  font-weight: 850;
+}
+
+/* =====================================================
+   RESULTADOS DOBLES
+   ===================================================== */
+
+.resultados-dobles {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 15px;
+
+  margin-top: 20px;
+}
+
+.resultados-dobles .resultado {
+  margin-top: 0;
+}
+
+/* =====================================================
+   FORMULA
+   ===================================================== */
+
+.formula-box {
+  margin: 20px 0;
+
+  padding: 22px;
+
+  border-radius: 18px;
+
+  background: #f0f8fa;
+
+  border: 1px solid #cce7eb;
+}
+
+.formula-box strong {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #087f87;
+
+  font-size: 14px;
+}
+
+.formula {
+  margin: 8px 0;
+
+  padding: 12px 15px;
+
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.85);
+
+  color: #234e5e;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =====================================================
+   NOTAS
+   ===================================================== */
+
+.nota {
+  margin-top: 18px;
+
+  padding: 14px 16px;
+
+  border-radius: 12px;
+
+  background: #f5f8f9;
+
+  color: #627a84;
+
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =====================================================
+   EJEMPLO
+   ===================================================== */
+
+.ejemplo-mini {
+  margin-top: 20px;
+
+  padding: 18px;
+
+  border-radius: 15px;
+
+  background: #f7fafb;
+
+  border: 1px dashed #b8d5da;
+}
+
+.ejemplo-mini strong {
+  color: #087f87;
+}
+
+.ejemplo-mini p {
+  color: #607984;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =====================================================
+   TABLA DE UNIDADES
+   ===================================================== */
+
+.tabla-unidades {
+  overflow: hidden;
+
+  margin-bottom: 20px;
+
+  border: 1px solid #dcebef;
+  border-radius: 18px;
+
+  background: white;
+
+  box-shadow: 0 6px 20px rgba(24, 59, 75, 0.05);
+}
+
+.fila {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  padding: 15px 20px;
+
+  border-bottom: 1px solid #edf2f4;
+
+  color: #526f7b;
+
+  font-size: 14px;
+}
+
+.fila:last-child {
+  border-bottom: none;
+}
+
+.fila.encabezado {
+  background: #087f87;
+
+  color: white;
+
+  font-weight: 800;
+}
+
+/* =====================================================
+   CONCENTRACIÃ“N
+   ===================================================== */
+
+.info-concentracion {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(230px, 1fr));
+
+  gap: 16px;
+
+  margin-bottom: 20px;
+}
+
+.info-concentracion > div {
+  padding: 21px;
+
+  border-radius: 17px;
+
+  background: white;
+
+  border: 1px solid #dcebef;
+
+  box-shadow: 0 6px 18px rgba(24, 59, 75, 0.05);
+}
+
+.info-concentracion h3 {
+  margin: 0 0 10px;
+
+  color: #087f87;
+
+  font-size: 16px;
+}
+
+.info-concentracion p {
+  margin: 0;
+
+  color: #627984;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =====================================================
+   EJERCICIOS
+   ===================================================== */
+
+.ejercicio-card {
+  display: grid;
+
+  grid-template-columns: 58px 1fr;
+
+  gap: 18px;
+
+  margin-bottom: 18px;
+  padding: 22px;
+
+  border-radius: 20px;
+
+  background: white;
+
+  border: 1px solid #dcebef;
+
+  box-shadow: 0 7px 22px rgba(24, 59, 75, 0.06);
+}
+
+.ejercicio-numero {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: linear-gradient(135deg, #0b8991, #17a8aa);
+
+  color: white;
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ejercicio-contenido h3 {
+  margin: 2px 0 12px;
+
+  color: #173f52;
+
+  font-size: 18px;
+}
+
+.problema {
+  color: #607984;
+
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ejercicio-contenido h4 {
+  margin-top: 20px;
+
+  color: #087f87;
+
+  font-size: 14px;
+}
+
+.pasos {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.paso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.paso span {
+  width: 25px;
+  height: 25px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #e5f6f7;
+
+  color: #087f87;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.paso p {
+  margin: 3px 0;
+
+  color: #607984;
+
+  font-size: 13px;
+}
+
+.respuesta-final {
+  margin-top: 20px;
+
+  padding: 17px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border-radius: 14px;
+
+  background: #effaf5;
+
+  border: 1px solid #c8eadb;
+}
+
+.respuesta-final span {
+  color: #2e7c5b;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.respuesta-final strong {
+  color: #216d4d;
+
+  font-size: 17px;
+}
+
+/* =====================================================
+   RESPONSIVE - TABLET
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+  .barra-superior-dosis {
+    padding: 10px 16px;
+  }
+
+  .nombre-modulo {
+    font-size: 15px;
+  }
+
+  .menu-dosis {
+    width: 94%;
+    margin-top: 12px;
+
+    border-radius: 14px;
+  }
+
+  .contenedor-dosis {
+    width: 94%;
+    padding-top: 20px;
+  }
+
+  .hero-dosis {
+    padding: 30px 24px;
+
+    border-radius: 21px;
+  }
+
+  .hero-dosis h1 {
+    font-size: 31px;
+  }
+
+  .hero-dosis p {
+    font-size: 14px;
+  }
+
+  .tarjetas-menu {
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    gap: 12px;
+  }
+
+  .tarjetas-menu button {
+    min-height: 145px;
+    padding: 17px;
+  }
+
+  .calculadora-card {
+    padding: 21px;
+  }
+
+  .titulo-seccion h2 {
+    font-size: 23px;
+  }
+
+  .titulo-icono {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE - CELULAR
+   ===================================================== */
+
+@media (max-width: 520px) {
+
+  .barra-superior-dosis {
+    min-height: 62px;
+
+    padding: 9px 12px;
+  }
+
+  .btn-volver {
+    padding: 9px 12px;
+
+    font-size: 12px;
+  }
+
+  .nombre-modulo {
+    font-size: 13px;
+  }
+
+  .menu-dosis {
+    margin-top: 10px;
+
+    padding: 6px;
+
+    border-radius: 13px;
+  }
+
+  .menu-dosis button {
+    padding: 9px 11px;
+
+    font-size: 11px;
+  }
+
+  .contenedor-dosis {
+    width: 94%;
+
+    padding: 17px 0 40px;
+  }
+
+  .hero-dosis {
+    padding: 25px 19px;
+
+    border-radius: 19px;
+  }
+
+  .hero-dosis h1 {
+    font-size: 27px;
+  }
+
+  .hero-dosis p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .advertencia-dosis {
+    padding: 16px;
+
+    border-radius: 14px;
+  }
+
+  .advertencia-dosis p {
+    font-size: 12px;
+  }
+
+  .tarjetas-menu {
+    grid-template-columns: 1fr;
+
+    gap: 11px;
+  }
+
+  .tarjetas-menu button {
+    min-height: 110px;
+
+    padding: 17px;
+
+    display: grid;
+
+    grid-template-columns: 48px 1fr;
+    grid-template-rows: auto auto;
+
+    column-gap: 13px;
+  }
+
+  .tarjetas-menu button span {
+    grid-row: 1 / 3;
+
+    width: 48px;
+    height: 48px;
+
+    margin: 0;
+  }
+
+  .tarjetas-menu button strong {
+    align-self: end;
+
+    font-size: 15px;
+  }
+
+  .tarjetas-menu button small {
+    align-self: start;
+  }
+
+  .titulo-seccion {
+    gap: 12px;
+  }
+
+  .titulo-icono {
+    width: 46px;
+    height: 46px;
+
+    border-radius: 13px;
+
+    font-size: 21px;
+  }
+
+  .titulo-seccion h2 {
+    font-size: 20px;
+  }
+
+  .titulo-seccion p {
+    font-size: 12px;
+  }
+
+  .calculadora-card {
+    padding: 17px;
+
+    border-radius: 17px;
+  }
+
+  .calculadora-card h3 {
+    font-size: 17px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+  .form-grid input,
+  .form-grid select {
+    padding: 13px;
+  }
+
+  .resultado {
+    padding: 18px;
+  }
+
+  .resultado strong {
+    font-size: 25px;
+  }
+
+  .formula-box {
+    padding: 17px;
+  }
+
+  .formula {
+    font-size: 11px;
+
+    overflow-x: auto;
+  }
+
+  .fila {
+    padding: 13px 14px;
+
+    font-size: 12px;
+  }
+
+  .ejercicio-card {
+    grid-template-columns: 1fr;
+
+    padding: 17px;
+  }
+
+  .ejercicio-numero {
+    width: 43px;
+    height: 43px;
+
+    font-size: 17px;
+  }
+
+  .respuesta-final {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* =====================================================
+   ACCESIBILIDAD
+   ===================================================== */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(24, 161, 165, 0.35);
+  outline-offset: 2px;
+}
+
