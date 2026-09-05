@@ -10,13 +10,72 @@ function Login({ onLogin }) {
   const [mensaje, setMensaje] = useState('')
   const [cargando, setCargando] = useState(false)
 
+  // =========================================================
+  // RECUPERAR CONTRASEÑA
+  // =========================================================
+
+  const recuperarContrasena = async () => {
+    setMensaje('')
+
+    const correo = email.trim().toLowerCase()
+
+    if (!correo) {
+      setMensaje(
+        'Escribe tu correo electrónico para recuperar tu contraseña.'
+      )
+      return
+    }
+
+    setCargando(true)
+
+    try {
+      const { error } =
+        await supabase.auth.resetPasswordForEmail(correo, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        })
+
+      if (error) {
+        console.error('Error al recuperar contraseña:', error)
+        throw error
+      }
+
+      setMensaje(
+        '✅ Te enviamos un correo para restablecer tu contraseña. Revisa tu bandeja de entrada y también la carpeta de spam.'
+      )
+    } catch (error) {
+      console.error('Error al recuperar contraseña:', error)
+
+      setMensaje(
+        error?.message ||
+          'No se pudo enviar el correo de recuperación.'
+      )
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  // =========================================================
+  // INICIAR SESIÓN / REGISTRO
+  // =========================================================
+
   const manejarSubmit = async (e) => {
     e.preventDefault()
 
     setMensaje('')
-    setCargando(true)
 
     const correo = email.trim().toLowerCase()
+
+    if (!correo) {
+      setMensaje('Escribe tu correo electrónico.')
+      return
+    }
+
+    if (!password) {
+      setMensaje('Escribe tu contraseña.')
+      return
+    }
+
+    setCargando(true)
 
     try {
       // =====================================================
@@ -24,14 +83,8 @@ function Login({ onLogin }) {
       // =====================================================
 
       if (modo === 'registro') {
-
         if (!nombre.trim()) {
           setMensaje('Escribe tu nombre.')
-          return
-        }
-
-        if (!correo) {
-          setMensaje('Escribe tu correo electrónico.')
           return
         }
 
@@ -42,15 +95,16 @@ function Login({ onLogin }) {
           return
         }
 
-        const { data, error } = await supabase.auth.signUp({
-          email: correo,
-          password: password,
-          options: {
-            data: {
-              nombre: nombre.trim(),
+        const { data, error } =
+          await supabase.auth.signUp({
+            email: correo,
+            password,
+            options: {
+              data: {
+                nombre: nombre.trim(),
+              },
             },
-          },
-        })
+          })
 
         if (error) {
           console.error('Error al registrarse:', error)
@@ -70,21 +124,15 @@ function Login({ onLogin }) {
           throw error
         }
 
-        // ===================================================
-        // REGISTRO EXITOSO CON SESIÓN INMEDIATA
-        // ===================================================
-
-        if (data?.session) {
+        // Si Supabase inicia sesión automáticamente
+        if (data?.session?.user) {
           onLogin(data.session.user)
           return
         }
 
-        // ===================================================
-        // REGISTRO EXITOSO PERO REQUIERE CONFIRMACIÓN
-        // ===================================================
-
+        // Si requiere confirmar correo
         setMensaje(
-          'Cuenta creada correctamente. Revisa tu correo electrónico y confirma tu cuenta antes de iniciar sesión.'
+          '✅ Cuenta creada correctamente. Revisa tu correo electrónico y confirma tu cuenta antes de iniciar sesión.'
         )
 
         setModo('login')
@@ -100,19 +148,15 @@ function Login({ onLogin }) {
       const { data, error } =
         await supabase.auth.signInWithPassword({
           email: correo,
-          password: password,
+          password,
         })
 
       if (error) {
-        console.error(
-          'Error al iniciar sesión:',
-          error
-        )
+        console.error('Error al iniciar sesión:', error)
 
         const errorMensaje =
           error.message?.toLowerCase() || ''
 
-        // Correo sin confirmar
         if (
           errorMensaje.includes('email not confirmed') ||
           errorMensaje.includes('email_not_confirmed')
@@ -122,34 +166,26 @@ function Login({ onLogin }) {
           )
         }
 
-        // Correo o contraseña incorrectos
         if (
-          errorMensaje.includes(
-            'invalid login credentials'
-          )
+          errorMensaje.includes('invalid login credentials')
         ) {
           throw new Error(
             'El correo o la contraseña son incorrectos.'
           )
         }
 
-        // Problemas de conexión
         if (
           errorMensaje.includes('network') ||
           errorMensaje.includes('fetch') ||
           errorMensaje.includes('failed to fetch')
         ) {
           throw new Error(
-            'No se pudo conectar con el servidor. Comprueba que tengas Internet e inténtalo nuevamente.'
+            'No se pudo conectar con el servidor. Comprueba tu conexión a Internet e inténtalo nuevamente.'
           )
         }
 
         throw error
       }
-
-      // =====================================================
-      // SESIÓN CORRECTA
-      // =====================================================
 
       if (!data?.user) {
         throw new Error(
@@ -158,23 +194,21 @@ function Login({ onLogin }) {
       }
 
       onLogin(data.user)
-
     } catch (error) {
-
-      console.error(
-        'Error de autenticación:',
-        error
-      )
+      console.error('Error de autenticación:', error)
 
       setMensaje(
         error?.message ||
-        'Ocurrió un error. Inténtalo nuevamente.'
+          'Ocurrió un error. Inténtalo nuevamente.'
       )
-
     } finally {
       setCargando(false)
     }
   }
+
+  // =========================================================
+  // INTERFAZ
+  // =========================================================
 
   return (
     <div className="pantalla-login">
@@ -191,6 +225,10 @@ function Login({ onLogin }) {
         <p className="login-subtitulo">
           Tu asistente para enfermería
         </p>
+
+        {/* =================================================
+            PESTAÑAS
+        ================================================= */}
 
         <div className="login-tabs">
 
@@ -226,14 +264,23 @@ function Login({ onLogin }) {
 
         </div>
 
+        {/* =================================================
+            FORMULARIO
+        ================================================= */}
+
         <form onSubmit={manejarSubmit}>
+
+          {/* NOMBRE */}
 
           {modo === 'registro' && (
             <div className="campo-login">
 
-              <label>Nombre</label>
+              <label htmlFor="nombre">
+                Nombre
+              </label>
 
               <input
+                id="nombre"
                 type="text"
                 placeholder="Tu nombre"
                 value={nombre}
@@ -247,11 +294,16 @@ function Login({ onLogin }) {
             </div>
           )}
 
+          {/* CORREO */}
+
           <div className="campo-login">
 
-            <label>Correo electrónico</label>
+            <label htmlFor="email">
+              Correo electrónico
+            </label>
 
             <input
+              id="email"
               type="email"
               placeholder="correo@ejemplo.com"
               value={email}
@@ -265,11 +317,16 @@ function Login({ onLogin }) {
 
           </div>
 
+          {/* CONTRASEÑA */}
+
           <div className="campo-login">
 
-            <label>Contraseña</label>
+            <label htmlFor="password">
+              Contraseña
+            </label>
 
             <input
+              id="password"
               type="password"
               placeholder="Mínimo 6 caracteres"
               value={password}
@@ -287,6 +344,27 @@ function Login({ onLogin }) {
 
           </div>
 
+          {/* =================================================
+              OLVIDASTE TU CONTRASEÑA
+          ================================================= */}
+
+         {modo === 'login' && (
+  <div className="recuperar-container">
+    <button
+      type="button"
+      className="boton-recuperar"
+      onClick={recuperarContrasena}
+      disabled={cargando}
+    >
+      ¿Olvidaste tu contraseña?
+    </button>
+  </div>
+)}
+
+          {/* =================================================
+              MENSAJE
+          ================================================= */}
+
           {mensaje && (
             <div
               className="mensaje-login"
@@ -295,6 +373,10 @@ function Login({ onLogin }) {
               {mensaje}
             </div>
           )}
+
+          {/* =================================================
+              BOTÓN PRINCIPAL
+          ================================================= */}
 
           <button
             type="submit"
@@ -311,7 +393,8 @@ function Login({ onLogin }) {
         </form>
 
         <p className="texto-seguridad">
-          🔒 Tu información personal estará asociada únicamente a tu cuenta.
+          🔒 Tu información personal estará asociada
+          únicamente a tu cuenta.
         </p>
 
       </div>

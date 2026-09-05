@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import medicamentos from './data/medicamentos'
 import CalculadoraDosis from './CalculadoraDosis'
+import CalculadoraPAM from './CalculadoraPAM'
+import CalculadoraIMC from './CalculadoraIMC'
 import SignosVitales from './SignosVitales'
 import EntregaTurno from './EntregaTurno'
 import Login from './Login'
+import ResetPassword from './ResetPassword'
 import { supabase } from './supabaseClient'
 
 function App() {
@@ -368,7 +371,21 @@ function App() {
       tipo: 'Herramientas',
       pagina: 'calculadora',
     },
+{
+  nombre: 'Calculadora de PAM',
+  descripcion: 'Presión arterial media',
+  icono: '🩺',
+  tipo: 'Herramientas',
+  pagina: 'pam',
+},
 
+{
+  nombre: 'Calculadora de índice de masa corporal',
+  descripcion: 'Cálculo de IMC según peso y altura',
+  icono: '⚖️',
+  tipo: 'Herramientas',
+  pagina: 'imc',
+},
     {
       nombre: 'RCP',
       descripcion: 'Reanimación cardiopulmonar',
@@ -488,21 +505,28 @@ function App() {
     )
   }
 
-  // =========================================================
-  // LOGIN
-  // =========================================================
+ // =========================================================
+// RECUPERACIÓN DE CONTRASEÑA
+// =========================================================
 
-  if (!usuarioSesion) {
-    return (
-      <Login
-        onLogin={(usuario) => {
-          setUsuarioSesion(usuario)
-          setPagina('inicio')
-        }}
-      />
-    )
-  }
+if (window.location.pathname === '/reset-password') {
+  return <ResetPassword />
+}
 
+// =========================================================
+// LOGIN
+// =========================================================
+
+if (!usuarioSesion) {
+  return (
+    <Login
+      onLogin={(usuario) => {
+        setUsuarioSesion(usuario)
+        setPagina('inicio')
+      }}
+    />
+  )
+}
   // =========================================================
   // PÁGINA CALCULADORA DE DOSIS
   // =========================================================
@@ -516,7 +540,52 @@ function App() {
       </div>
     )
   }
+if (pagina === 'pam') {
+  return (
+    <div className="app">
+      <CalculadoraPAM
+        onVolver={() => setPagina('inicio')}
+      />
+    </div>
+  )
+}
 
+if (pagina === 'imc') {
+  return (
+    <div className="app">
+      <CalculadoraIMC
+        onVolver={() => setPagina('inicio')}
+      />
+    </div>
+  )
+}
+  // =========================================================
+// PÁGINA CALCULADORA DE PAM
+// =========================================================
+
+if (pagina === 'pam') {
+  return (
+    <div className="app">
+      <CalculadoraPAM
+        onVolver={() => setPagina('inicio')}
+      />
+    </div>
+  )
+}
+
+// =========================================================
+// PÁGINA CALCULADORA DE IMC
+// =========================================================
+
+if (pagina === 'imc') {
+  return (
+    <div className="app">
+      <CalculadoraIMC
+        onVolver={() => setPagina('inicio')}
+      />
+    </div>
+  )
+}
   // =========================================================
   // PÁGINA SIGNOS VITALES
   // =========================================================
@@ -1253,7 +1322,33 @@ function App() {
                   Cálculo de dosis, volumen y comprimidos
                 </small>
               </button>
+<button
+  type="button"
+  className="card"
+  onClick={() => setPagina('pam')}
+>
+  <span className="card-icon">🩺</span>
 
+  <strong>Calculadora de PAM</strong>
+
+  <small>
+    Calcula la presión arterial media
+  </small>
+</button>
+
+<button
+  type="button"
+  className="card"
+  onClick={() => setPagina('imc')}
+>
+  <span className="card-icon">⚖️</span>
+
+  <strong>Calculadora de IMC</strong>
+
+  <small>
+    Calcula el índice de masa corporal
+  </small>
+</button>
               {/* URGENCIAS */}
 
               <button
