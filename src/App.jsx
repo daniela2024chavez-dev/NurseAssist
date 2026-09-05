@@ -10,681 +10,89 @@ import Login from './Login'
 import ResetPassword from './ResetPassword'
 import { supabase } from './supabaseClient'
 
+const PROGRESO_INICIAL = {
+  intentos: 0,
+  puntajeTotal: 0,
+  mejorPuntaje: 0,
+  preguntasRespondidas: 0,
+  aprobados: 0,
+  resultadosPorTema: {},
+}
+
 function App() {
+  // =========================================================
+  // NAVEGACIÓN
+  // =========================================================
+
   const [pagina, setPagina] = useState('inicio')
+
+  // =========================================================
+  // SESIÓN
+  // =========================================================
 
   const [usuarioSesion, setUsuarioSesion] = useState(null)
   const [cargandoSesion, setCargandoSesion] = useState(true)
 
+  // =========================================================
+  // MEDICAMENTOS
+  // =========================================================
+
   const [medicamentoSeleccionado, setMedicamentoSeleccionado] =
     useState(null)
 
-  const [busquedaMedicamento, setBusquedaMedicamento] = useState('')
+  const [busquedaMedicamento, setBusquedaMedicamento] =
+    useState('')
+
   const [filtroGrupo, setFiltroGrupo] = useState('Todos')
+
+  // =========================================================
+  // PROCEDIMIENTOS
+  // =========================================================
 
   const [procedimientoSeleccionado, setProcedimientoSeleccionado] =
     useState(null)
 
-  const [busquedaProcedimiento, setBusquedaProcedimiento] = useState('')
+  const [busquedaProcedimiento, setBusquedaProcedimiento] =
+    useState('')
+
+  // =========================================================
+  // BÚSQUEDA GENERAL
+  // =========================================================
 
   const [busquedaGeneral, setBusquedaGeneral] = useState('')
 
-  // =========================
+  // =========================================================
   // CUESTIONARIOS
-  // =========================
+  // =========================================================
 
-  const preguntasBanco = [
-    {
-      id: 1,
-      tema: 'Medicamentos',
-      pregunta: '¿Cuál es una de las principales medidas para prevenir errores en la administración de medicamentos?',
-      opciones: [
-        'Administrar rápidamente el medicamento',
-        'Verificar los datos y la indicación antes de administrar',
-        'Evitar revisar la prescripción',
-        'Administrar todos los medicamentos juntos',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 2,
-      tema: 'Medicamentos',
-      pregunta: '¿Qué vía de administración utiliza directamente el tracto gastrointestinal?',
-      opciones: [
-        'Vía enteral',
-        'Vía intravenosa',
-        'Vía intramuscular',
-        'Vía subcutánea',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 3,
-      tema: 'Medicamentos',
-      pregunta: '¿Qué información debe verificarse antes de administrar un medicamento?',
-      opciones: [
-        'Solo el nombre del paciente',
-        'Solo el color del medicamento',
-        'Paciente, medicamento, dosis, vía y horario, entre otros datos de seguridad',
-        'Solo la fecha',
-      ],
-      correcta: 2,
-    },
-    {
-      id: 4,
-      tema: 'Medicamentos',
-      pregunta: '¿Qué debe hacerse si existe una duda respecto de una indicación farmacológica?',
-      opciones: [
-        'Administrar igualmente',
-        'Preguntar o verificar la indicación antes de administrar',
-        'Cambiar la dosis',
-        'Suspender todos los medicamentos del paciente',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 5,
-      tema: 'Medicamentos',
-      pregunta: '¿Qué vía administra el medicamento directamente al torrente sanguíneo?',
-      opciones: [
-        'Oral',
-        'Tópica',
-        'Intravenosa',
-        'Rectal',
-      ],
-      correcta: 2,
-    },
+  const [quizTema, setQuizTema] = useState('')
+  const [quizCantidad, setQuizCantidad] = useState(10)
+  const [quizPreguntas, setQuizPreguntas] = useState([])
+  const [quizActual, setQuizActual] = useState(0)
+  const [quizRespuesta, setQuizRespuesta] = useState(null)
+  const [quizPuntaje, setQuizPuntaje] = useState(0)
+  const [quizFinalizado, setQuizFinalizado] = useState(false)
 
-    {
-      id: 6,
-      tema: 'Signos vitales',
-      pregunta: '¿Cuáles son considerados signos vitales básicos?',
-      opciones: [
-        'Peso, talla y perímetro abdominal',
-        'Temperatura, pulso, respiración y presión arterial',
-        'Glucosa, peso y talla',
-        'Dolor y peso únicamente',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 7,
-      tema: 'Signos vitales',
-      pregunta: '¿Qué instrumento se utiliza para medir la presión arterial?',
-      opciones: [
-        'Oxímetro',
-        'Termómetro',
-        'Esfigmomanómetro',
-        'Glucómetro',
-      ],
-      correcta: 2,
-    },
-    {
-      id: 8,
-      tema: 'Signos vitales',
-      pregunta: '¿Qué mide principalmente un oxímetro de pulso?',
-      opciones: [
-        'Presión arterial',
-        'Saturación periférica de oxígeno y frecuencia de pulso',
-        'Temperatura corporal',
-        'Glucemia',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 9,
-      tema: 'Signos vitales',
-      pregunta: '¿Qué debe hacerse antes de registrar un signo vital?',
-      opciones: [
-        'Inventar el valor si no se recuerda',
-        'Realizar una medición adecuada y observar al paciente',
-        'Redondear siempre al número más cercano',
-        'No informar ningún resultado',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 10,
-      tema: 'Signos vitales',
-      pregunta: '¿Qué parámetro corresponde a la frecuencia respiratoria?',
-      opciones: [
-        'Número de respiraciones por minuto',
-        'Cantidad de sangre por minuto',
-        'Temperatura de la piel',
-        'Presión arterial media',
-      ],
-      correcta: 0,
-    },
+  const [preguntasBancoSupabase, setPreguntasBancoSupabase] =
+    useState([])
 
-    {
-      id: 11,
-      tema: 'Procedimientos',
-      pregunta: '¿Cuál es uno de los objetivos principales del lavado de manos clínico?',
-      opciones: [
-        'Eliminar toda la flora normal de la piel',
-        'Reducir la transmisión de microorganismos',
-        'Reemplazar el uso de guantes en cualquier situación',
-        'Evitar registrar procedimientos',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 12,
-      tema: 'Procedimientos',
-      pregunta: '¿Qué debe realizarse antes de un procedimiento de enfermería?',
-      opciones: [
-        'Identificar al paciente y preparar el material necesario',
-        'Comenzar sin explicar nada',
-        'Evitar revisar el procedimiento',
-        'Utilizar cualquier material disponible',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 13,
-      tema: 'Procedimientos',
-      pregunta: '¿Por qué es importante mantener una técnica limpia o aséptica cuando corresponde?',
-      opciones: [
-        'Para aumentar el tiempo del procedimiento',
-        'Para disminuir el riesgo de contaminación e infección',
-        'Para evitar registrar información',
-        'Para reemplazar la higiene de manos',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 14,
-      tema: 'Procedimientos',
-      pregunta: 'Después de finalizar un procedimiento, ¿qué acción es importante?',
-      opciones: [
-        'Dejar el material utilizado en cualquier lugar',
-        'Realizar higiene de manos y registrar lo correspondiente',
-        'No observar al paciente',
-        'Retirarse sin informar',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 15,
-      tema: 'Procedimientos',
-      pregunta: '¿Qué elemento debe considerarse al preparar un procedimiento?',
-      opciones: [
-        'Solo la rapidez',
-        'La seguridad del paciente y el material necesario',
-        'El color del uniforme',
-        'La cantidad de personas presentes',
-      ],
-      correcta: 1,
-    },
+  const [cargandoPreguntas, setCargandoPreguntas] =
+    useState(false)
 
-    {
-      id: 16,
-      tema: 'Urgencias',
-      pregunta: 'Ante una persona inconsciente, ¿qué debe evaluarse inicialmente?',
-      opciones: [
-        'Su peso',
-        'Su respuesta y condiciones básicas de seguridad',
-        'Su alimentación',
-        'Su temperatura de la semana anterior',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 17,
-      tema: 'Urgencias',
-      pregunta: '¿Qué significa RCP?',
-      opciones: [
-        'Registro Clínico Preventivo',
-        'Reanimación Cardiopulmonar',
-        'Respuesta Clínica Primaria',
-        'Revisión Cardíaca Preventiva',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 18,
-      tema: 'Urgencias',
-      pregunta: 'En una emergencia, ¿por qué es importante activar oportunamente el sistema de respuesta?',
-      opciones: [
-        'Para retrasar la atención',
-        'Para facilitar una respuesta coordinada y oportuna',
-        'Para evitar evaluar al paciente',
-        'Para reemplazar todas las intervenciones',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 19,
-      tema: 'Urgencias',
-      pregunta: '¿Qué debe priorizarse en una situación de emergencia?',
-      opciones: [
-        'La seguridad de la escena y la evaluación inicial',
-        'El registro administrativo antes de atender',
-        'La alimentación del paciente',
-        'El traslado sin evaluación',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 20,
-      tema: 'Urgencias',
-      pregunta: '¿Qué elemento es fundamental al entregar información durante una emergencia?',
-      opciones: [
-        'Información clara y relevante del paciente',
-        'Información inventada',
-        'Solo el nombre del paciente',
-        'Ningún dato',
-      ],
-      correcta: 0,
-    },
+  // =========================================================
+  // PROGRESO
+  // =========================================================
 
-    {
-      id: 21,
-      tema: 'Sistema respiratorio',
-      pregunta: '¿Cuál es la función principal del sistema respiratorio?',
-      opciones: [
-        'Regular exclusivamente la temperatura',
-        'Realizar el intercambio de oxígeno y dióxido de carbono',
-        'Producir insulina',
-        'Regular la presión arterial directamente',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 22,
-      tema: 'Sistema respiratorio',
-      pregunta: '¿Qué dispositivo puede utilizarse para administrar oxígeno a un paciente?',
-      opciones: [
-        'Glucómetro',
-        'Cánula nasal',
-        'Esfigmomanómetro',
-        'Termómetro',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 23,
-      tema: 'Sistema respiratorio',
-      pregunta: '¿Qué parámetro puede monitorizarse mediante un oxímetro?',
-      opciones: [
-        'Saturación periférica de oxígeno',
-        'Glucosa capilar',
-        'Temperatura central',
-        'Presión intraocular',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 24,
-      tema: 'Sistema respiratorio',
-      pregunta: '¿Qué signo puede indicar dificultad respiratoria?',
-      opciones: [
-        'Disminución del esfuerzo respiratorio siempre',
-        'Uso de musculatura accesoria',
-        'Ausencia de cambios',
-        'Aumento del apetito',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 25,
-      tema: 'Sistema respiratorio',
-      pregunta: '¿Qué debe observarse además de la saturación de oxígeno?',
-      opciones: [
-        'Solo el peso',
-        'El estado general y el trabajo respiratorio del paciente',
-        'Solo la talla',
-        'Solo la edad',
-      ],
-      correcta: 1,
-    },
-
-    {
-      id: 26,
-      tema: 'Diabetes',
-      pregunta: '¿Qué mide principalmente una glicemia capilar?',
-      opciones: [
-        'La presión arterial',
-        'La concentración de glucosa en sangre',
-        'La saturación de oxígeno',
-        'La temperatura',
-      ],
-      correcta: 1,
-    },
-    {
-      id: 27,
-      tema: 'Diabetes',
-      pregunta: '¿Qué instrumento se utiliza habitualmente para medir glicemia capilar?',
-      opciones: [
-        'Glucómetro',
-        'Oxímetro',
-        'Termómetro',
-        'Esfigmomanómetro',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 28,
-      tema: 'Diabetes',
-      pregunta: '¿Qué debe verificarse antes de realizar una glicemia capilar?',
-      opciones: [
-        'Identificación del paciente y material necesario',
-        'Solo el color de la lanceta',
-        'El peso del glucómetro',
-        'Nada',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 29,
-      tema: 'Diabetes',
-      pregunta: '¿Qué síntoma puede asociarse a hipoglucemia?',
-      opciones: [
-        'Sudoración y temblor',
-        'Solo aumento de talla',
-        'Dolor de oído siempre',
-        'Ningún síntoma posible',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 30,
-      tema: 'Diabetes',
-      pregunta: '¿Qué hormona está relacionada directamente con la regulación de la glucosa sanguínea?',
-      opciones: [
-        'Insulina',
-        'Melatonina',
-        'Adrenalina exclusivamente',
-        'Tiroxina exclusivamente',
-      ],
-      correcta: 0,
-    },
-
-    {
-      id: 31,
-      tema: 'Cardiología',
-      pregunta: '¿Qué representa la presión arterial sistólica?',
-      opciones: [
-        'La presión durante la contracción ventricular',
-        'La presión durante el sueño',
-        'La frecuencia respiratoria',
-        'La saturación de oxígeno',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 32,
-      tema: 'Cardiología',
-      pregunta: '¿Qué representa la presión arterial diastólica?',
-      opciones: [
-        'La presión durante la relajación ventricular',
-        'La frecuencia respiratoria',
-        'La temperatura corporal',
-        'La glucemia',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 33,
-      tema: 'Cardiología',
-      pregunta: '¿Qué significa PAM?',
-      opciones: [
-        'Presión Arterial Media',
-        'Presión Auricular Máxima',
-        'Pulso Arterial Manual',
-        'Presión Aérea Media',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 34,
-      tema: 'Cardiología',
-      pregunta: '¿Qué estructura del corazón impulsa la sangre hacia la circulación sistémica?',
-      opciones: [
-        'Ventrículo izquierdo',
-        'Aurícula derecha',
-        'Aurícula izquierda',
-        'Ventrículo derecho exclusivamente',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 35,
-      tema: 'Cardiología',
-      pregunta: '¿Qué signo vital permite evaluar la frecuencia cardíaca?',
-      opciones: [
-        'Pulso',
-        'Temperatura',
-        'Saturación',
-        'Glicemia',
-      ],
-      correcta: 0,
-    },
-
-    {
-      id: 36,
-      tema: 'Neurología',
-      pregunta: '¿Qué sistema coordina principalmente las funciones nerviosas del organismo?',
-      opciones: [
-        'Sistema nervioso',
-        'Sistema digestivo',
-        'Sistema tegumentario',
-        'Sistema urinario',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 37,
-      tema: 'Neurología',
-      pregunta: '¿Qué puede evaluarse durante una valoración neurológica?',
-      opciones: [
-        'Nivel de conciencia y respuesta',
-        'Solo el peso',
-        'Solo la temperatura',
-        'Solo la presión arterial',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 38,
-      tema: 'Neurología',
-      pregunta: '¿Qué significa ACV?',
-      opciones: [
-        'Accidente Cerebrovascular',
-        'Alteración Cardíaca Vascular',
-        'Actividad Clínica Variable',
-        'Atención Cardiovascular',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 39,
-      tema: 'Neurología',
-      pregunta: '¿Qué signo puede ser compatible con un ACV y requiere evaluación urgente?',
-      opciones: [
-        'Alteración súbita del habla o debilidad de un lado del cuerpo',
-        'Aumento del apetito',
-        'Dolor muscular después de ejercicio',
-        'Sed leve',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 40,
-      tema: 'Neurología',
-      pregunta: '¿Por qué es importante registrar el momento de inicio de síntomas neurológicos?',
-      opciones: [
-        'Porque puede ser relevante para la evaluación y manejo clínico',
-        'Porque reemplaza todos los exámenes',
-        'Porque determina el peso',
-        'Porque evita realizar una evaluación',
-      ],
-      correcta: 0,
-    },
-
-    {
-      id: 41,
-      tema: 'Todos',
-      pregunta: '¿Qué principio debe estar presente en todos los procedimientos de enfermería?',
-      opciones: [
-        'Seguridad del paciente',
-        'Realizar todo rápidamente',
-        'Evitar comunicarse',
-        'No registrar',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 42,
-      tema: 'Todos',
-      pregunta: '¿Qué acción ayuda a disminuir las infecciones asociadas a la atención de salud?',
-      opciones: [
-        'Higiene adecuada de manos',
-        'Evitar el uso de EPP',
-        'Reutilizar material descartable',
-        'No limpiar superficies',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 43,
-      tema: 'Todos',
-      pregunta: '¿Por qué es importante identificar correctamente al paciente?',
-      opciones: [
-        'Para disminuir errores y entregar una atención segura',
-        'Solo para completar formularios',
-        'Para evitar hablar con el paciente',
-        'No es necesario',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 44,
-      tema: 'Todos',
-      pregunta: '¿Qué característica debe tener un registro de enfermería?',
-      opciones: [
-        'Ser claro, oportuno y objetivo',
-        'Ser inventado',
-        'Ser incompleto',
-        'No incluir información relevante',
-      ],
-      correcta: 0,
-    },
-    {
-      id: 45,
-      tema: 'Todos',
-      pregunta: '¿Qué debe hacerse frente a un cambio importante en el estado del paciente?',
-      opciones: [
-        'Ignorarlo',
-        'Evaluar, informar según corresponda y registrar',
-        'Esperar varios días',
-        'No comunicarlo',
-      ],
-      correcta: 1,
-    },
-  ]
-
-const [quizTema, setQuizTema] = useState('')
-const [quizCantidad, setQuizCantidad] = useState(10)
-const [quizPreguntas, setQuizPreguntas] = useState([])
-const [quizActual, setQuizActual] = useState(0)
-const [quizRespuesta, setQuizRespuesta] = useState(null)
-const [quizPuntaje, setQuizPuntaje] = useState(0)
-const [quizFinalizado, setQuizFinalizado] = useState(false)
-
-const [preguntasBancoSupabase, setPreguntasBancoSupabase] = useState([])
-const [cargandoPreguntas, setCargandoPreguntas] = useState(false)
-  const [progreso, setProgreso] = useState(() => { useEffect(() => {
-  const cargarPreguntas = async () => {
-    setCargandoPreguntas(true)
-
-    const { data, error } = await supabase
-      .from('preguntas')
-      .select('id, tema, pregunta, opciones, correcta')
-      .eq('activa', true)
-      .order('id', { ascending: true })
-
-    if (error) {
-      console.error(
-        'Error al cargar preguntas desde Supabase:',
-        error
-      )
-
-      alert(
-        'No se pudieron cargar las preguntas desde Supabase.'
-      )
-
-      setCargandoPreguntas(false)
-      return
-    }
-
-    setPreguntasBancoSupabase(data || [])
-    setCargandoPreguntas(false)
-  }
-
-  cargarPreguntas()
-}, [])
-    try {
-      const guardado = localStorage.getItem('nurseassist_progreso')
-
-      return guardado
-        ? JSON.parse(guardado)
-        : {
-            intentos: 0,
-            puntajeTotal: 0,
-            mejorPuntaje: 0,
-            preguntasRespondidas: 0,
-            aprobados: 0,
-            resultadosPorTema: {},
-          }
-    } catch {
-      return {
-        intentos: 0,
-        puntajeTotal: 0,
-        mejorPuntaje: 0,
-        preguntasRespondidas: 0,
-        aprobados: 0,
-        resultadosPorTema: {},
-      }
-    }
+  const [progreso, setProgreso] = useState({
+    ...PROGRESO_INICIAL,
   })
 
-  useEffect(() => {
-    localStorage.setItem(
-      'nurseassist_progreso',
-      JSON.stringify(progreso)
-    )
-  }, [progreso])
-useEffect(() => {
-  const cargarPreguntas = async () => {
-    setCargandoPreguntas(true)
+  const [cargandoProgreso, setCargandoProgreso] = useState(false)
 
-    const { data, error } = await supabase
-      .from('preguntas')
-      .select('id, tema, pregunta, opciones, correcta')
-      .eq('activa', true)
-      .order('id', { ascending: true })
+  // =========================================================
+  // TEMAS DE CUESTIONARIOS
+  // =========================================================
 
-    if (error) {
-      console.error(
-        'Error al cargar preguntas desde Supabase:',
-        error
-      )
-
-      alert(
-        'No se pudieron cargar las preguntas desde Supabase.'
-      )
-
-      setCargandoPreguntas(false)
-      return
-    }
-
-    setPreguntasBancoSupabase(data || [])
-    setCargandoPreguntas(false)
-  }
-
-  cargarPreguntas()
-}, [])
   const temasQuiz = [
     'Medicamentos',
     'Signos vitales',
@@ -697,325 +105,63 @@ useEffect(() => {
     'Todos',
   ]
 
-  const mezclarPreguntas = (lista) => {
-    return [...lista].sort(() => Math.random() - 0.5)
-  }
-const iniciarCuestionario = () => {
-  if (!quizTema) {
-    alert('Selecciona un tema antes de comenzar.')
-    return
-  }
-
-  if (cargandoPreguntas) {
-    alert('Las preguntas todavía se están cargando.')
-    return
-  }
-
-  if (preguntasBancoSupabase.length === 0) {
-    alert('No hay preguntas disponibles en Supabase.')
-    return
-  }
-
-  let preguntasDisponibles = preguntasBancoSupabase
-
-  if (quizTema !== 'Todos') {
-    preguntasDisponibles = preguntasBancoSupabase.filter(
-      (pregunta) =>
-        pregunta.tema === quizTema ||
-        pregunta.tema === 'Todos'
-    )
-  }
-
-  if (preguntasDisponibles.length < quizCantidad) {
-    alert(
-      `Actualmente hay ${preguntasDisponibles.length} preguntas disponibles para este tema.`
-    )
-    return
-  }
-
-  const seleccionadas = mezclarPreguntas(
-    preguntasDisponibles
-  ).slice(0, quizCantidad)
-
-  setQuizPreguntas(seleccionadas)
-  setQuizActual(0)
-  setQuizRespuesta(null)
-  setQuizPuntaje(0)
-  setQuizFinalizado(false)
-  setPagina('cuestionarios')
-}
-  if (!quizTema) {
-    alert('Selecciona un tema antes de comenzar.')
-    return
-  }
-
-  if (cargandoPreguntas) {
-    alert('Las preguntas todavía se están cargando.')
-    return
-  }
-
-  if (preguntasBancoSupabase.length === 0) {
-    alert('No hay preguntas disponibles en Supabase.')
-    return
-  }
-
-  let preguntasDisponibles = preguntasBancoSupabase
-
-  if (quizTema !== 'Todos') {
-    preguntasDisponibles = preguntasBancoSupabase.filter(
-      (pregunta) =>
-        pregunta.tema === quizTema ||
-        pregunta.tema === 'Todos'
-    )
-  }
-
-  if (preguntasDisponibles.length < quizCantidad) {
-    alert(
-      `Actualmente hay ${preguntasDisponibles.length} preguntas disponibles para este tema.`
-    )
-    return
-  }
-
-  const seleccionadas = mezclarPreguntas(
-    preguntasDisponibles
-  ).slice(0, quizCantidad)
-
-  setQuizPreguntas(seleccionadas)
-  setQuizActual(0)
-  setQuizRespuesta(null)
-  setQuizPuntaje(0)
-  setQuizFinalizado(false)
-  setPagina('cuestionarios')
-}
-
-  const responderPregunta = (indice) => {
-    if (quizRespuesta !== null) return
-
-    setQuizRespuesta(indice)
-
-    const preguntaActual = quizPreguntas[quizActual]
-
-    if (indice === preguntaActual.correcta) {
-      setQuizPuntaje((puntajeAnterior) => puntajeAnterior + 1)
-    }
-  }
-
-const siguientePregunta = async () => {
-  if (quizRespuesta === null) {
-    alert('Selecciona una respuesta antes de continuar.')
-    return
-  }
-
-  const preguntaActual = quizPreguntas[quizActual]
-
-  const respuestaCorrecta =
-    quizRespuesta === preguntaActual.correcta
-
-  const puntajeFinal =
-    quizPuntaje + (respuestaCorrecta ? 1 : 0)
-
-  if (quizActual + 1 < quizPreguntas.length) {
-    setQuizActual((actual) => actual + 1)
-    setQuizRespuesta(null)
-    setQuizPuntaje(puntajeFinal)
-    return
-  }
-
-  const porcentaje = Math.round(
-    (puntajeFinal / quizPreguntas.length) * 100
-  )
-
-  if (usuarioSesion?.id) {
-    const { error } = await supabase
-      .from('resultados_cuestionarios')
-      .insert({
-        user_id: usuarioSesion.id,
-        tema: quizTema,
-        preguntas: quizPreguntas.length,
-        correctas: puntajeFinal,
-        porcentaje: porcentaje,
-        aprobado: porcentaje >= 70,
-      })
-
-    if (error) {
-      console.error(
-        'Error al guardar resultado:',
-        error
-      )
-
-      alert(
-        'El cuestionario terminó, pero no se pudo guardar el resultado en Supabase.'
-      )
-    }
-  }
-
-  setProgreso((anterior) => {
-    const resultadosTema = {
-      ...anterior.resultadosPorTema,
-    }
-
-    const anteriorTema =
-      resultadosTema[quizTema] || {
-        intentos: 0,
-        mejorPuntaje: 0,
-        preguntas: 0,
-      }
-
-    resultadosTema[quizTema] = {
-      intentos: anteriorTema.intentos + 1,
-      mejorPuntaje: Math.max(
-        anteriorTema.mejorPuntaje,
-        porcentaje
-      ),
-      preguntas:
-        anteriorTema.preguntas +
-        quizPreguntas.length,
-    }
-
-    return {
-      ...anterior,
-      intentos: anterior.intentos + 1,
-      puntajeTotal:
-        anterior.puntajeTotal + porcentaje,
-      mejorPuntaje: Math.max(
-        anterior.mejorPuntaje,
-        porcentaje
-      ),
-      preguntasRespondidas:
-        anterior.preguntasRespondidas +
-        quizPreguntas.length,
-      aprobados:
-        anterior.aprobados +
-        (porcentaje >= 70 ? 1 : 0),
-      resultadosPorTema: resultadosTema,
-    }
-  })
-
-  setQuizPuntaje(puntajeFinal)
-  setQuizFinalizado(true)
-}
-  if (quizRespuesta === null) {
-    alert('Selecciona una respuesta antes de continuar.')
-    return
-  }
-
-  const preguntaActual = quizPreguntas[quizActual]
-
-  const respuestaCorrecta =
-    quizRespuesta === preguntaActual.correcta
-
-  const puntajeFinal =
-    quizPuntaje + (respuestaCorrecta ? 1 : 0)
-
-  if (quizActual + 1 < quizPreguntas.length) {
-    setQuizActual((actual) => actual + 1)
-    setQuizRespuesta(null)
-    return
-  }
-
-  const porcentaje = Math.round(
-    (puntajeFinal / quizPreguntas.length) * 100
-  )
-
-  // =========================
-  // GUARDAR RESULTADO EN SUPABASE
-  // =========================
-
-  if (usuarioSesion?.id) {
-    const { error } = await supabase
-      .from('resultados_cuestionarios')
-      .insert({
-        user_id: usuarioSesion.id,
-        tema: quizTema,
-        preguntas: quizPreguntas.length,
-        correctas: puntajeFinal,
-        porcentaje: porcentaje,
-        aprobado: porcentaje >= 70,
-      })
-
-    if (error) {
-      console.error(
-        'Error al guardar resultado:',
-        error
-      )
-
-      alert(
-        'El cuestionario terminó, pero no se pudo guardar el resultado en Supabase.'
-      )
-    }
-  }
-
-  // =========================
-  // ACTUALIZAR PROGRESO LOCAL
-  // =========================
-
-  setProgreso((anterior) => {
-    const resultadosTema = {
-      ...anterior.resultadosPorTema,
-    }
-
-    const anteriorTema =
-      resultadosTema[quizTema] || {
-        intentos: 0,
-        mejorPuntaje: 0,
-        preguntas: 0,
-      }
-
-    resultadosTema[quizTema] = {
-      intentos: anteriorTema.intentos + 1,
-      mejorPuntaje: Math.max(
-        anteriorTema.mejorPuntaje,
-        porcentaje
-      ),
-      preguntas:
-        anteriorTema.preguntas +
-        quizPreguntas.length,
-    }
-
-    return {
-      ...anterior,
-      intentos: anterior.intentos + 1,
-      puntajeTotal:
-        anterior.puntajeTotal + porcentaje,
-      mejorPuntaje: Math.max(
-        anterior.mejorPuntaje,
-        porcentaje
-      ),
-      preguntasRespondidas:
-        anterior.preguntasRespondidas +
-        quizPreguntas.length,
-      aprobados:
-        anterior.aprobados +
-        (porcentaje >= 70 ? 1 : 0),
-      resultadosPorTema: resultadosTema,
-    }
-  })
-
-  setQuizPuntaje(puntajeFinal)
-  setQuizFinalizado(true)
-}
-
-  const volverASeleccionQuiz = () => {
-    setQuizPreguntas([])
-    setQuizActual(0)
-    setQuizRespuesta(null)
-    setQuizPuntaje(0)
-    setQuizFinalizado(false)
-    setPagina('cuestionarios')
-  }
-
-  // =========================
+  // =========================================================
   // SESIÓN SUPABASE
-  // =========================
+  // =========================================================
 
   useEffect(() => {
-    const cargarSesion = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+    let activo = true
 
-      setUsuarioSesion(session?.user ?? null)
-      setCargandoSesion(false)
+    const cargarSesion = async () => {
+      console.log('==========================================')
+      console.log('🔐 COMPROBANDO SESIÓN DE SUPABASE')
+      console.log('==========================================')
+
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+
+        if (!activo) {
+          return
+        }
+
+        if (error) {
+          console.error(
+            '❌ ERROR OBTENIENDO SESIÓN:',
+            error
+          )
+
+          setUsuarioSesion(null)
+          setCargandoSesion(false)
+
+          return
+        }
+
+        console.log(
+          '👤 Usuario encontrado:',
+          session?.user?.id || 'NO HAY USUARIO'
+        )
+
+        console.log(
+          '📧 Correo:',
+          session?.user?.email || 'SIN CORREO'
+        )
+
+        setUsuarioSesion(session?.user ?? null)
+        setCargandoSesion(false)
+      } catch (error) {
+        console.error(
+          '💥 ERROR INESPERADO OBTENIENDO SESIÓN:',
+          error
+        )
+
+        if (activo) {
+          setUsuarioSesion(null)
+          setCargandoSesion(false)
+        }
+      }
     }
 
     cargarSesion()
@@ -1023,29 +169,904 @@ const siguientePregunta = async () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (evento, session) => {
+        if (!activo) {
+          return
+        }
+
+        console.log('==========================================')
+        console.log(
+          '🔄 CAMBIO DE AUTENTICACIÓN:',
+          evento
+        )
+
+        console.log(
+          '👤 Usuario:',
+          session?.user?.id || 'NO HAY USUARIO'
+        )
+
+        console.log(
+          '📧 Correo:',
+          session?.user?.email || 'SIN CORREO'
+        )
+
+        console.log('==========================================')
+
         setUsuarioSesion(session?.user ?? null)
         setCargandoSesion(false)
       }
     )
 
     return () => {
+      activo = false
       subscription.unsubscribe()
     }
   }, [])
 
-  const cerrarSesion = async () => {
-    await supabase.auth.signOut()
+  // =========================================================
+  // CARGAR PREGUNTAS DESDE SUPABASE
+  // =========================================================
 
-    setUsuarioSesion(null)
-    setPagina('inicio')
-    setMedicamentoSeleccionado(null)
-    setProcedimientoSeleccionado(null)
+  useEffect(() => {
+    // ---------------------------------------------------------
+    // ESPERAR A QUE SUPABASE TERMINE DE COMPROBAR LA SESIÓN
+    // ---------------------------------------------------------
+
+    if (cargandoSesion) {
+      console.log(
+        '⏳ Esperando a que Supabase confirme la sesión...'
+      )
+
+      return
+    }
+
+    // ---------------------------------------------------------
+    // SI NO HAY USUARIO, NO CARGAR PREGUNTAS
+    // ---------------------------------------------------------
+
+    if (!usuarioSesion?.id) {
+      console.log(
+        '⚠️ No hay usuario autenticado.'
+      )
+
+      console.log(
+        '⚠️ No se cargarán preguntas.'
+      )
+
+      setPreguntasBancoSupabase([])
+      setCargandoPreguntas(false)
+
+      return
+    }
+
+    let activo = true
+
+    const cargarPreguntas = async () => {
+      console.log('==========================================')
+      console.log('🔵 INICIANDO CARGA DE PREGUNTAS')
+      console.log('==========================================')
+
+      console.log(
+        '👤 Usuario autenticado:',
+        usuarioSesion.id
+      )
+
+      console.log(
+        '📧 Correo:',
+        usuarioSesion.email
+      )
+
+      setCargandoPreguntas(true)
+
+      try {
+        // -----------------------------------------------------
+        // CONSULTA A SUPABASE
+        // -----------------------------------------------------
+
+        const {
+          data,
+          error,
+        } = await supabase
+          .from('preguntas')
+          .select(
+            'id, tema, pregunta, opciones, correcta, activa'
+          )
+          .order('id', {
+            ascending: true,
+          })
+
+        console.log(
+          '📦 DATA RECIBIDA DESDE SUPABASE:',
+          data
+        )
+
+        console.log(
+          '❌ ERROR DE SUPABASE:',
+          error
+        )
+
+        console.log(
+          '📊 CANTIDAD DE PREGUNTAS:',
+          data?.length ?? 0
+        )
+
+        // -----------------------------------------------------
+        // COMPONENTE DESMONTADO
+        // -----------------------------------------------------
+
+        if (!activo) {
+          return
+        }
+
+        // -----------------------------------------------------
+        // ERROR
+        // -----------------------------------------------------
+
+        if (error) {
+          console.error(
+            '❌ ERROR AL CARGAR PREGUNTAS:',
+            error
+          )
+
+          console.error(
+            'Código:',
+            error.code
+          )
+
+          console.error(
+            'Mensaje:',
+            error.message
+          )
+
+          console.error(
+            'Detalles:',
+            error.details
+          )
+
+          console.error(
+            'Hint:',
+            error.hint
+          )
+
+          setPreguntasBancoSupabase([])
+
+          alert(
+            `No se pudieron cargar las preguntas desde Supabase.\n\n${error.message}`
+          )
+
+          return
+        }
+
+        // -----------------------------------------------------
+        // SUPABASE DEVOLVIÓ CERO FILAS
+        // -----------------------------------------------------
+
+        if (!data || data.length === 0) {
+          console.warn(
+            '⚠️ SUPABASE DEVOLVIÓ 0 PREGUNTAS.'
+          )
+
+          console.warn(
+            '⚠️ Usuario autenticado:',
+            usuarioSesion.id
+          )
+
+          console.warn(
+            '⚠️ Esto puede indicar un problema con las políticas RLS de Supabase.'
+          )
+
+          setPreguntasBancoSupabase([])
+
+          alert(
+            'Supabase no devolvió ninguna pregunta.\n\n' +
+              'La sesión está iniciada, pero la tabla "preguntas" está devolviendo 0 registros.\n\n' +
+              'Si las 45 preguntas aparecen en Supabase, revisaremos las políticas RLS.'
+          )
+
+          return
+        }
+
+        // -----------------------------------------------------
+        // FORMATEAR PREGUNTAS
+        // -----------------------------------------------------
+
+        const preguntasFormateadas = data.map(
+          (pregunta) => {
+            let opciones = pregunta.opciones
+
+            // -------------------------------------------------
+            // OPCIONES COMO STRING
+            // -------------------------------------------------
+
+            if (typeof opciones === 'string') {
+              try {
+                opciones = JSON.parse(opciones)
+              } catch (error) {
+                console.error(
+                  `❌ No se pudo convertir opciones de pregunta ${pregunta.id}:`,
+                  opciones
+                )
+
+                opciones = []
+              }
+            }
+
+            // -------------------------------------------------
+            // SEGUNDA CONVERSIÓN POR DOBLE SERIALIZACIÓN
+            // -------------------------------------------------
+
+            if (typeof opciones === 'string') {
+              try {
+                opciones = JSON.parse(opciones)
+              } catch {
+                opciones = []
+              }
+            }
+
+            // -------------------------------------------------
+            // OBJETO → ARRAY
+            // -------------------------------------------------
+
+            if (
+              opciones &&
+              typeof opciones === 'object' &&
+              !Array.isArray(opciones)
+            ) {
+              opciones = Object.values(opciones)
+            }
+
+            // -------------------------------------------------
+            // ASEGURAR ARRAY
+            // -------------------------------------------------
+
+            if (!Array.isArray(opciones)) {
+              opciones = []
+            }
+
+            // -------------------------------------------------
+            // CONVERTIR OPCIONES A TEXTO
+            // -------------------------------------------------
+
+            opciones = opciones.map(
+              (opcion) => String(opcion ?? '')
+            )
+
+            // -------------------------------------------------
+            // CORRECTA COMO NÚMERO
+            // -------------------------------------------------
+
+            const correcta = Number(
+              pregunta.correcta
+            )
+
+            console.log(
+              `📝 Pregunta ${pregunta.id}:`,
+              pregunta.pregunta
+            )
+
+            console.log(
+              `📚 Tema ${pregunta.id}:`,
+              pregunta.tema
+            )
+
+            console.log(
+              `🔤 Opciones ${pregunta.id}:`,
+              opciones
+            )
+
+            console.log(
+              `✅ Correcta ${pregunta.id}:`,
+              correcta
+            )
+
+            console.log(
+              `🟢 Activa ${pregunta.id}:`,
+              pregunta.activa
+            )
+
+            return {
+              ...pregunta,
+              correcta,
+              opciones,
+            }
+          }
+        )
+
+        // -----------------------------------------------------
+        // RESULTADO FINAL
+        // -----------------------------------------------------
+
+        console.log('==========================================')
+
+        console.log(
+          '🎯 PREGUNTAS FORMATEADAS:',
+          preguntasFormateadas
+        )
+
+        console.log(
+          '🎯 TOTAL FINAL:',
+          preguntasFormateadas.length
+        )
+
+        console.log('==========================================')
+
+        if (activo) {
+          setPreguntasBancoSupabase(
+            preguntasFormateadas
+          )
+        }
+      } catch (error) {
+        console.error(
+          '💥 ERROR INESPERADO CARGANDO PREGUNTAS:',
+          error
+        )
+
+        if (activo) {
+          setPreguntasBancoSupabase([])
+
+          alert(
+            'Ocurrió un error inesperado al cargar las preguntas.'
+          )
+        }
+      } finally {
+        if (activo) {
+          setCargandoPreguntas(false)
+        }
+      }
+    }
+
+    cargarPreguntas()
+
+    return () => {
+      activo = false
+    }
+  }, [
+    cargandoSesion,
+    usuarioSesion?.id,
+  ])
+
+  // =========================================================
+  // CARGAR PROGRESO DESDE SUPABASE
+  // =========================================================
+
+  const cargarProgresoSupabase = async (
+    usuarioId
+  ) => {
+    if (!usuarioId) {
+      setProgreso({
+        ...PROGRESO_INICIAL,
+      })
+
+      return
+    }
+
+    setCargandoProgreso(true)
+
+    console.log(
+      '📈 Cargando progreso del usuario:',
+      usuarioId
+    )
+
+    const {
+      data,
+      error,
+    } = await supabase
+      .from('resultados_cuestionarios')
+      .select(
+        'id, tema, preguntas, correctas, porcentaje, aprobado, created_at'
+      )
+      .eq('user_id', usuarioId)
+      .order('created_at', {
+        ascending: true,
+      })
+
+    if (error) {
+      console.error(
+        '❌ Error al cargar progreso desde Supabase:',
+        error
+      )
+
+      setCargandoProgreso(false)
+      return
+    }
+
+    const resultados = data || []
+
+    console.log(
+      '📊 Resultados encontrados:',
+      resultados
+    )
+
+    if (resultados.length === 0) {
+      setProgreso({
+        ...PROGRESO_INICIAL,
+      })
+
+      setCargandoProgreso(false)
+      return
+    }
+
+    let intentos = 0
+    let puntajeTotal = 0
+    let mejorPuntaje = 0
+    let preguntasRespondidas = 0
+    let aprobados = 0
+
+    const resultadosPorTema = {}
+
+    resultados.forEach(
+      (resultado) => {
+        const porcentaje =
+          Number(
+            resultado.porcentaje
+          ) || 0
+
+        const preguntas =
+          Number(
+            resultado.preguntas
+          ) || 0
+
+        intentos += 1
+
+        puntajeTotal += porcentaje
+
+        preguntasRespondidas +=
+          preguntas
+
+        mejorPuntaje = Math.max(
+          mejorPuntaje,
+          porcentaje
+        )
+
+        if (
+          resultado.aprobado ===
+          true
+        ) {
+          aprobados += 1
+        }
+
+        const tema =
+          resultado.tema ||
+          'Sin tema'
+
+        if (
+          !resultadosPorTema[
+            tema
+          ]
+        ) {
+          resultadosPorTema[
+            tema
+          ] = {
+            intentos: 0,
+            mejorPuntaje: 0,
+            preguntas: 0,
+          }
+        }
+
+        resultadosPorTema[
+          tema
+        ].intentos += 1
+
+        resultadosPorTema[
+          tema
+        ].mejorPuntaje =
+          Math.max(
+            resultadosPorTema[
+              tema
+            ].mejorPuntaje,
+            porcentaje
+          )
+
+        resultadosPorTema[
+          tema
+        ].preguntas +=
+          preguntas
+      }
+    )
+
+    setProgreso({
+      intentos,
+      puntajeTotal,
+      mejorPuntaje,
+      preguntasRespondidas,
+      aprobados,
+      resultadosPorTema,
+    })
+
+    setCargandoProgreso(false)
   }
 
-  // =========================
+  // =========================================================
+  // CARGAR PROGRESO CUANDO CAMBIA EL USUARIO
+  // =========================================================
+
+  useEffect(() => {
+    if (usuarioSesion?.id) {
+      cargarProgresoSupabase(
+        usuarioSesion.id
+      )
+    } else {
+      setProgreso({
+        ...PROGRESO_INICIAL,
+      })
+    }
+  }, [usuarioSesion?.id])
+
+  // =========================================================
+  // MEZCLAR PREGUNTAS
+  // =========================================================
+
+  const mezclarPreguntas = (
+    lista
+  ) => {
+    return [...lista].sort(
+      () => Math.random() - 0.5
+    )
+  }
+
+  // =========================================================
+  // INICIAR CUESTIONARIO
+  // =========================================================
+
+  const iniciarCuestionario =
+    () => {
+      if (!quizTema) {
+        alert(
+          'Selecciona un tema antes de comenzar.'
+        )
+
+        return
+      }
+
+      if (cargandoPreguntas) {
+        alert(
+          'Las preguntas todavía se están cargando.'
+        )
+
+        return
+      }
+
+      if (
+        preguntasBancoSupabase.length ===
+        0
+      ) {
+        alert(
+          'No hay preguntas disponibles en Supabase.'
+        )
+
+        return
+      }
+
+      let preguntasDisponibles =
+        preguntasBancoSupabase
+
+      if (
+        quizTema !==
+        'Todos'
+      ) {
+        preguntasDisponibles =
+          preguntasBancoSupabase.filter(
+            (pregunta) =>
+              pregunta.tema ===
+                quizTema ||
+              pregunta.tema ===
+                'Todos'
+          )
+      }
+
+      if (
+        preguntasDisponibles.length <
+        quizCantidad
+      ) {
+        alert(
+          `Actualmente hay ${preguntasDisponibles.length} preguntas disponibles para este tema.`
+        )
+
+        return
+      }
+
+      const seleccionadas =
+        mezclarPreguntas(
+          preguntasDisponibles
+        ).slice(
+          0,
+          quizCantidad
+        )
+
+      console.log(
+        '🎯 Cuestionario iniciado:',
+        seleccionadas
+      )
+
+      setQuizPreguntas(
+        seleccionadas
+      )
+
+      setQuizActual(0)
+
+      setQuizRespuesta(null)
+
+      setQuizPuntaje(0)
+
+      setQuizFinalizado(false)
+
+      setPagina(
+        'cuestionarios'
+      )
+    }
+
+  // =========================================================
+  // RESPONDER PREGUNTA
+  // =========================================================
+
+  const responderPregunta =
+    (indice) => {
+      if (
+        quizRespuesta !==
+        null
+      ) {
+        return
+      }
+
+      console.log(
+        'Respuesta seleccionada:',
+        indice
+      )
+
+      setQuizRespuesta(indice)
+    }
+
+  // =========================================================
+  // SIGUIENTE PREGUNTA
+  // =========================================================
+
+  const siguientePregunta =
+    async () => {
+      if (
+        quizRespuesta ===
+        null
+      ) {
+        alert(
+          'Selecciona una respuesta antes de continuar.'
+        )
+
+        return
+      }
+
+      const preguntaActual =
+        quizPreguntas[
+          quizActual
+        ]
+
+      if (!preguntaActual) {
+        return
+      }
+
+      const respuestaCorrecta =
+        Number(
+          quizRespuesta
+        ) ===
+        Number(
+          preguntaActual.correcta
+        )
+
+      const puntajeFinal =
+        quizPuntaje +
+        (respuestaCorrecta
+          ? 1
+          : 0)
+
+      console.log(
+        'Respuesta:',
+        quizRespuesta
+      )
+
+      console.log(
+        'Respuesta correcta:',
+        preguntaActual.correcta
+      )
+
+      console.log(
+        'Puntaje:',
+        puntajeFinal
+      )
+
+      // =======================================================
+      // TODAVÍA QUEDAN PREGUNTAS
+      // =======================================================
+
+      if (
+        quizActual + 1 <
+        quizPreguntas.length
+      ) {
+        setQuizActual(
+          (actual) =>
+            actual + 1
+        )
+
+        setQuizRespuesta(
+          null
+        )
+
+        setQuizPuntaje(
+          puntajeFinal
+        )
+
+        return
+      }
+
+      // =======================================================
+      // FINAL DEL CUESTIONARIO
+      // =======================================================
+
+      const porcentaje =
+        Math.round(
+          (puntajeFinal /
+            quizPreguntas.length) *
+            100
+        )
+
+      console.log(
+        '🎉 Cuestionario terminado'
+      )
+
+      console.log(
+        'Correctas:',
+        puntajeFinal
+      )
+
+      console.log(
+        'Porcentaje:',
+        porcentaje
+      )
+
+      // =======================================================
+      // GUARDAR RESULTADO
+      // =======================================================
+
+      if (usuarioSesion?.id) {
+        const {
+          error,
+        } = await supabase
+          .from(
+            'resultados_cuestionarios'
+          )
+          .insert({
+            user_id:
+              usuarioSesion.id,
+
+            tema:
+              quizTema,
+
+            preguntas:
+              quizPreguntas.length,
+
+            correctas:
+              puntajeFinal,
+
+            porcentaje:
+              porcentaje,
+
+            aprobado:
+              porcentaje >= 70,
+          })
+
+        if (error) {
+          console.error(
+            '❌ Error al guardar resultado:',
+            error
+          )
+
+          alert(
+            'El cuestionario terminó, pero no se pudo guardar el resultado en Supabase.'
+          )
+        } else {
+          console.log(
+            '✅ Resultado guardado correctamente en Supabase.'
+          )
+
+          await cargarProgresoSupabase(
+            usuarioSesion.id
+          )
+        }
+      }
+
+      setQuizPuntaje(
+        puntajeFinal
+      )
+
+      setQuizFinalizado(
+        true
+      )
+    }
+
+  // =========================================================
+  // HACER OTRO CUESTIONARIO
+  // =========================================================
+
+  const volverASeleccionQuiz =
+    () => {
+      setQuizPreguntas([])
+      setQuizActual(0)
+      setQuizRespuesta(null)
+      setQuizPuntaje(0)
+      setQuizFinalizado(false)
+
+      setPagina(
+        'cuestionarios'
+      )
+    }
+
+  // =========================================================
+  // CERRAR SESIÓN
+  // =========================================================
+
+  const cerrarSesion =
+    async () => {
+      console.log(
+        '🚪 Cerrando sesión...'
+      )
+
+      const {
+        error,
+      } =
+        await supabase.auth.signOut()
+
+      if (error) {
+        console.error(
+          '❌ Error cerrando sesión:',
+          error
+        )
+
+        alert(
+          'No se pudo cerrar la sesión correctamente.'
+        )
+
+        return
+      }
+
+      console.log(
+        '✅ Sesión cerrada correctamente.'
+      )
+
+      setUsuarioSesion(null)
+
+      setPagina('inicio')
+
+      setMedicamentoSeleccionado(
+        null
+      )
+
+      setProcedimientoSeleccionado(
+        null
+      )
+
+      setPreguntasBancoSupabase(
+        []
+      )
+
+      setCargandoPreguntas(
+        false
+      )
+
+      setProgreso({
+        ...PROGRESO_INICIAL,
+      })
+
+      setQuizPreguntas([])
+
+      setQuizActual(0)
+
+      setQuizRespuesta(null)
+
+      setQuizPuntaje(0)
+
+      setQuizFinalizado(false)
+    }
+
+  // =========================================================
   // PROCEDIMIENTOS
-  // =========================
+  // =========================================================
 
   const procedimientos = [
     {
@@ -1077,11 +1098,13 @@ const siguientePregunta = async () => {
         'Evitar accesorios que dificulten la higiene.',
       ],
     },
+
     {
       id: 'medicamentos',
       icono: '💉',
       nombre: 'Administración de medicamentos',
-      descripcion: 'Preparación y administración segura',
+      descripcion:
+        'Preparación y administración segura',
       objetivo:
         'Administrar medicamentos de forma segura, verificando la indicación y los datos del paciente.',
       materiales: [
@@ -1108,6 +1131,7 @@ const siguientePregunta = async () => {
         'Mantener medidas de seguridad durante todo el procedimiento.',
       ],
     },
+
     {
       id: 'glicemia',
       icono: '🩸',
@@ -1142,6 +1166,7 @@ const siguientePregunta = async () => {
         'Informar resultados que requieran atención según protocolo.',
       ],
     },
+
     {
       id: 'signos',
       icono: '❤️',
@@ -1174,6 +1199,7 @@ const siguientePregunta = async () => {
         'Observar el estado general del paciente.',
       ],
     },
+
     {
       id: 'curacion',
       icono: '🩹',
@@ -1209,6 +1235,7 @@ const siguientePregunta = async () => {
         'Mantener técnica adecuada durante todo el procedimiento.',
       ],
     },
+
     {
       id: 'oxigenoterapia',
       icono: '🫁',
@@ -1243,6 +1270,7 @@ const siguientePregunta = async () => {
         'Mantener vigilancia del estado respiratorio.',
         'Mantener medidas de seguridad frente al uso de oxígeno.',
       ],
+
       sistemas: {
         bajoFlujo: [
           {
@@ -1256,20 +1284,25 @@ const siguientePregunta = async () => {
             fio2: 'Aproximadamente 35–60%',
           },
           {
-            nombre: 'Mascarilla con reservorio',
+            nombre:
+              'Mascarilla con reservorio',
             flujo: '10–15 L/min',
             fio2: 'Aproximadamente 60–95%',
           },
         ],
+
         altoFlujo: [
           {
-            nombre: 'Mascarilla Venturi',
+            nombre:
+              'Mascarilla Venturi',
             flujo: 'Según adaptador',
             fio2: 'Aproximadamente 24–50%',
           },
           {
-            nombre: 'Cánula nasal de alto flujo',
-            flujo: 'Hasta aproximadamente 60 L/min',
+            nombre:
+              'Cánula nasal de alto flujo',
+            flujo:
+              'Hasta aproximadamente 60 L/min',
             fio2: '21–100%',
           },
         ],
@@ -1277,176 +1310,242 @@ const siguientePregunta = async () => {
     },
   ]
 
-  // =========================
+  // =========================================================
   // BÚSQUEDA GENERAL
-  // =========================
+  // =========================================================
 
   const resultadosGenerales = [
-    ...medicamentos.map((medicamento) => ({
-      nombre: medicamento.nombre,
-      descripcion:
-        medicamento.grupo || 'Medicamento',
-      icono: '💊',
-      tipo: 'Medicamentos',
-      pagina: 'medicamentos',
-      dato: medicamento,
-    })),
+    ...medicamentos.map(
+      (medicamento) => ({
+        nombre:
+          medicamento.nombre,
+        descripcion:
+          medicamento.grupo ||
+          'Medicamento',
+        icono: '💊',
+        tipo: 'Medicamentos',
+        pagina: 'medicamentos',
+        dato: medicamento,
+      })
+    ),
 
-    ...procedimientos.map((procedimiento) => ({
-      nombre: procedimiento.nombre,
-      descripcion: procedimiento.descripcion,
-      icono: procedimiento.icono,
-      tipo: 'Procedimientos',
-      pagina: 'procedimientos',
-      dato: procedimiento,
-    })),
+    ...procedimientos.map(
+      (procedimiento) => ({
+        nombre:
+          procedimiento.nombre,
+        descripcion:
+          procedimiento.descripcion,
+        icono:
+          procedimiento.icono,
+        tipo: 'Procedimientos',
+        pagina:
+          'procedimientos',
+        dato: procedimiento,
+      })
+    ),
 
     {
-      nombre: 'Calculadora de dosis',
-      descripcion: 'Cálculo de dosis, volumen y comprimidos',
+      nombre:
+        'Calculadora de dosis',
+      descripcion:
+        'Cálculo de dosis, volumen y comprimidos',
       icono: '🧮',
       tipo: 'Herramientas',
       pagina: 'calculadora',
     },
+
     {
-      nombre: 'Calculadora de PAM',
-      descripcion: 'Presión arterial media',
+      nombre:
+        'Calculadora de PAM',
+      descripcion:
+        'Presión arterial media',
       icono: '🩺',
       tipo: 'Herramientas',
       pagina: 'pam',
     },
+
     {
-      nombre: 'Calculadora de índice de masa corporal',
-      descripcion: 'Cálculo de IMC según peso y altura',
+      nombre:
+        'Calculadora de índice de masa corporal',
+      descripcion:
+        'Cálculo de IMC según peso y altura',
       icono: '⚖️',
       tipo: 'Herramientas',
       pagina: 'imc',
     },
+
     {
-      nombre: 'Cuestionarios',
-      descripcion: 'Practica por tema y mide tu resultado',
+      nombre:
+        'Cuestionarios',
+      descripcion:
+        'Practica por tema y mide tu resultado',
       icono: '📝',
       tipo: 'Estudio',
-      pagina: 'cuestionarios',
+      pagina:
+        'cuestionarios',
     },
+
     {
-      nombre: 'Mi progreso',
-      descripcion: 'Revisa tus resultados y avances',
+      nombre:
+        'Mi progreso',
+      descripcion:
+        'Revisa tus resultados y avances',
       icono: '📈',
       tipo: 'Estudio',
       pagina: 'progreso',
     },
+
     {
       nombre: 'RCP',
-      descripcion: 'Reanimación cardiopulmonar',
+      descripcion:
+        'Reanimación cardiopulmonar',
       icono: '🚨',
       tipo: 'Urgencias',
       pagina: 'urgencias',
     },
+
     {
-      nombre: 'Manejo de emergencias',
-      descripcion: 'Evaluación y respuesta inicial',
+      nombre:
+        'Manejo de emergencias',
+      descripcion:
+        'Evaluación y respuesta inicial',
       icono: '🚑',
       tipo: 'Urgencias',
       pagina: 'urgencias',
     },
+
     {
-      nombre: 'Entrega de turno',
-      descripcion: 'Comunicación y continuidad del cuidado',
+      nombre:
+        'Entrega de turno',
+      descripcion:
+        'Comunicación y continuidad del cuidado',
       icono: '📋',
       tipo: 'Comunicación',
       pagina: 'turno',
     },
+
     {
       nombre: 'SBAR',
-      descripcion: 'Herramienta de comunicación clínica',
+      descripcion:
+        'Herramienta de comunicación clínica',
       icono: '🗣️',
       tipo: 'Comunicación',
       pagina: 'turno',
     },
+
     {
       nombre: 'EPOC',
-      descripcion: 'Enfermedad pulmonar obstructiva crónica',
+      descripcion:
+        'Enfermedad pulmonar obstructiva crónica',
       icono: '🫁',
       tipo: 'Guías',
       pagina: 'guias',
     },
+
     {
       nombre: 'Neumonía',
-      descripcion: 'Información general',
+      descripcion:
+        'Información general',
       icono: '🫁',
       tipo: 'Guías',
       pagina: 'guias',
     },
+
     {
       nombre: 'Asma',
-      descripcion: 'Información general',
+      descripcion:
+        'Información general',
       icono: '🫁',
       tipo: 'Guías',
       pagina: 'guias',
     },
   ]
 
-  const resultadosFiltrados = resultadosGenerales.filter(
-    (resultado) => {
-      const texto =
-        `${resultado.nombre} ${resultado.descripcion} ${resultado.tipo}`.toLowerCase()
+  const resultadosFiltrados =
+    resultadosGenerales.filter(
+      (resultado) => {
+        const texto =
+          `${resultado.nombre} ${resultado.descripcion} ${resultado.tipo}`.toLowerCase()
 
-      return texto.includes(
-        busquedaGeneral.toLowerCase()
-      )
-    }
-  )
+        return texto.includes(
+          busquedaGeneral.toLowerCase()
+        )
+      }
+    )
+
+  // =========================================================
+  // MEDICAMENTOS FILTRADOS
+  // =========================================================
 
   const gruposMedicamentos = [
     'Todos',
     ...new Set(
       medicamentos
-        .map((medicamento) => medicamento.grupo)
+        .map(
+          (medicamento) =>
+            medicamento.grupo
+        )
         .filter(Boolean)
     ),
   ]
 
-  const medicamentosFiltrados = medicamentos.filter(
-    (medicamento) => {
-      const coincideBusqueda =
-        medicamento.nombre
-          .toLowerCase()
-          .includes(busquedaMedicamento.toLowerCase())
+  const medicamentosFiltrados =
+    medicamentos.filter(
+      (medicamento) => {
+        const coincideBusqueda =
+          medicamento.nombre
+            .toLowerCase()
+            .includes(
+              busquedaMedicamento.toLowerCase()
+            )
 
-      const coincideGrupo =
-        filtroGrupo === 'Todos' ||
-        medicamento.grupo === filtroGrupo
+        const coincideGrupo =
+          filtroGrupo ===
+            'Todos' ||
+          medicamento.grupo ===
+            filtroGrupo
 
-      return coincideBusqueda && coincideGrupo
-    }
-  )
-
-  const procedimientosFiltrados =
-    procedimientos.filter((procedimiento) =>
-      `${procedimiento.nombre} ${procedimiento.descripcion}`
-        .toLowerCase()
-        .includes(
-          busquedaProcedimiento.toLowerCase()
+        return (
+          coincideBusqueda &&
+          coincideGrupo
         )
+      }
     )
 
-  // =========================
+  // =========================================================
+  // PROCEDIMIENTOS FILTRADOS
+  // =========================================================
+
+  const procedimientosFiltrados =
+    procedimientos.filter(
+      (procedimiento) =>
+        `${procedimiento.nombre} ${procedimiento.descripcion}`
+          .toLowerCase()
+          .includes(
+            busquedaProcedimiento.toLowerCase()
+          )
+    )
+
+  // =========================================================
   // USUARIO
-  // =========================
+  // =========================================================
 
   const nombreUsuario =
-    usuarioSesion?.user_metadata?.nombre ||
-    usuarioSesion?.user_metadata?.full_name ||
-    usuarioSesion?.email?.split('@')[0] ||
+    usuarioSesion?.user_metadata
+      ?.nombre ||
+    usuarioSesion?.user_metadata
+      ?.full_name ||
+    usuarioSesion?.email?.split(
+      '@'
+    )[0] ||
     'Usuario'
 
   const correoUsuario =
     usuarioSesion?.email || ''
 
-  // =========================
-  // CARGANDO
-  // =========================
+  // =========================================================
+  // CARGANDO SESIÓN
+  // =========================================================
 
   if (cargandoSesion) {
     return (
@@ -1459,137 +1558,199 @@ const siguientePregunta = async () => {
               style={{
                 width: '120px',
                 display: 'block',
-                margin: '0 auto 20px',
+                margin:
+                  '0 auto 20px',
               }}
             />
 
-            <h2>Cargando NurseAssist...</h2>
+            <h2>
+              Cargando NurseAssist...
+            </h2>
           </section>
         </main>
       </div>
     )
   }
 
-  // =========================
+  // =========================================================
   // RESET PASSWORD
-  // =========================
+  // =========================================================
 
-  if (window.location.pathname === '/reset-password') {
+  if (
+    window.location.pathname ===
+    '/reset-password'
+  ) {
     return <ResetPassword />
   }
 
-  // =========================
+  // =========================================================
   // LOGIN
-  // =========================
+  // =========================================================
 
   if (!usuarioSesion) {
     return (
       <Login
         onLogin={(usuario) => {
-          setUsuarioSesion(usuario)
+          console.log(
+            '✅ Login recibido en App:',
+            usuario
+          )
+
+          setUsuarioSesion(
+            usuario
+          )
+
           setPagina('inicio')
         }}
       />
     )
   }
 
-  // =========================
+  // =========================================================
   // CALCULADORA DE DOSIS
-  // =========================
+  // =========================================================
 
-  if (pagina === 'calculadora') {
+  if (
+    pagina ===
+    'calculadora'
+  ) {
     return (
       <CalculadoraDosis
-        onVolver={() => setPagina('inicio')}
+        onVolver={() =>
+          setPagina('inicio')
+        }
       />
     )
   }
 
-  // =========================
+  // =========================================================
   // CALCULADORA PAM
-  // =========================
+  // =========================================================
 
   if (pagina === 'pam') {
     return (
       <CalculadoraPAM
-        onVolver={() => setPagina('inicio')}
+        onVolver={() =>
+          setPagina('inicio')
+        }
       />
     )
   }
 
-  // =========================
+  // =========================================================
   // CALCULADORA IMC
-  // =========================
+  // =========================================================
 
   if (pagina === 'imc') {
     return (
       <CalculadoraIMC
-        onVolver={() => setPagina('inicio')}
+        onVolver={() =>
+          setPagina('inicio')
+        }
       />
     )
   }
 
-  // =========================
+  // =========================================================
   // SIGNOS VITALES
-  // =========================
+  // =========================================================
 
-  if (pagina === 'signosVitales') {
+  if (
+    pagina ===
+    'signosVitales'
+  ) {
     return (
       <SignosVitales
-        onVolver={() => setPagina('inicio')}
+        onVolver={() =>
+          setPagina('inicio')
+        }
       />
     )
   }
 
-  // =========================
+  // =========================================================
   // ENTREGA DE TURNO
-  // =========================
+  // =========================================================
 
   if (pagina === 'turno') {
     return (
       <EntregaTurno
-        onVolver={() => setPagina('inicio')}
+        onVolver={() =>
+          setPagina('inicio')
+        }
       />
     )
   }
 
-  // =========================
+  // =========================================================
   // CUESTIONARIOS
-  // =========================
+  // =========================================================
 
-  if (pagina === 'cuestionarios') {
+  if (
+    pagina ===
+    'cuestionarios'
+  ) {
     const preguntaActual =
-      quizPreguntas[quizActual]
+      quizPreguntas[
+        quizActual
+      ]
 
     return (
       <div className="app">
         <header className="header">
           <div>
-            <h1>📝 Cuestionarios</h1>
-            <p>Practica y evalúa tus conocimientos</p>
+            <h1>
+              📝 Cuestionarios
+            </h1>
+
+            <p>
+              Practica y evalúa tus
+              conocimientos
+            </p>
           </div>
 
           <button
             type="button"
             className="back-button"
-            onClick={() => setPagina('inicio')}
+            onClick={() =>
+              setPagina('inicio')
+            }
           >
             ← Volver
           </button>
         </header>
 
         <main className="content">
-          {quizPreguntas.length === 0 && (
+
+          {/* =================================================
+              SELECCIÓN
+              ================================================= */}
+
+          {quizPreguntas.length ===
+            0 && (
             <>
               <section className="welcome">
-                <h2>📚 Elige tu cuestionario</h2>
+                <h2>
+                  📚 Elige tu
+                  cuestionario
+                </h2>
+
                 <p>
-                  Selecciona el tema y la cantidad
-                  de preguntas que quieres responder.
+                  Selecciona el tema
+                  y la cantidad de
+                  preguntas que
+                  quieres responder.
+                </p>
+
+                <p>
+                  {cargandoPreguntas
+                    ? '⏳ Cargando preguntas desde Supabase...'
+                    : `📚 ${preguntasBancoSupabase.length} preguntas cargadas`}
                 </p>
               </section>
 
               <div className="medicamento-detalle">
+
                 <div className="campo-login">
                   <label htmlFor="temaQuiz">
                     Tema
@@ -1599,63 +1760,92 @@ const siguientePregunta = async () => {
                     id="temaQuiz"
                     value={quizTema}
                     onChange={(e) =>
-                      setQuizTema(e.target.value)
+                      setQuizTema(
+                        e.target.value
+                      )
                     }
                     style={{
                       width: '100%',
                       padding: '12px',
-                      borderRadius: '8px',
-                      border: '1px solid #ccc',
-                      fontSize: '16px',
+                      borderRadius:
+                        '8px',
+                      border:
+                        '1px solid #ccc',
+                      fontSize:
+                        '16px',
                     }}
                   >
                     <option value="">
-                      Selecciona un tema
+                      Selecciona un
+                      tema
                     </option>
 
-                    {temasQuiz.map((tema) => {
-const disponibles =
-  tema === 'Todos'
-    ? preguntasBancoSupabase.length
-    : preguntasBancoSupabase.filter(
-        (pregunta) =>
-          pregunta.tema === tema ||
-          pregunta.tema === 'Todos'
-      ).length
-                      return (
-                        <option
-                          key={tema}
-                          value={tema}
-                        >
-                          {tema} ({disponibles} disponibles)
-                        </option>
-                      )
-                    })}
+                    {temasQuiz.map(
+                      (tema) => {
+                        const disponibles =
+                          tema ===
+                          'Todos'
+                            ? preguntasBancoSupabase.length
+                            : preguntasBancoSupabase.filter(
+                                (
+                                  pregunta
+                                ) =>
+                                  pregunta.tema ===
+                                    tema ||
+                                  pregunta.tema ===
+                                    'Todos'
+                              ).length
+
+                        return (
+                          <option
+                            key={tema}
+                            value={tema}
+                          >
+                            {tema} (
+                            {
+                              disponibles
+                            }{' '}
+                            disponibles)
+                          </option>
+                        )
+                      }
+                    )}
                   </select>
                 </div>
 
                 <div
                   className="campo-login"
-                  style={{ marginTop: '20px' }}
+                  style={{
+                    marginTop:
+                      '20px',
+                  }}
                 >
                   <label htmlFor="cantidadQuiz">
-                    Cantidad de preguntas
+                    Cantidad de
+                    preguntas
                   </label>
 
                   <select
                     id="cantidadQuiz"
-                    value={quizCantidad}
+                    value={
+                      quizCantidad
+                    }
                     onChange={(e) =>
                       setQuizCantidad(
-                        Number(e.target.value)
+                        Number(
+                          e.target.value
+                        )
                       )
                     }
                     style={{
                       width: '100%',
                       padding: '12px',
-                      borderRadius: '8px',
-                      border: '1px solid #ccc',
-                      fontSize: '16px',
+                      borderRadius:
+                        '8px',
+                      border:
+                        '1px solid #ccc',
+                      fontSize:
+                        '16px',
                     }}
                   >
                     {[
@@ -1668,63 +1858,103 @@ const disponibles =
                       35,
                       40,
                       45,
-                    ].map((cantidad) => (
-                      <option
-                        key={cantidad}
-                        value={cantidad}
-                      >
-                        {cantidad} preguntas
-                      </option>
-                    ))}
+                    ].map(
+                      (
+                        cantidad
+                      ) => (
+                        <option
+                          key={
+                            cantidad
+                          }
+                          value={
+                            cantidad
+                          }
+                        >
+                          {cantidad}{' '}
+                          preguntas
+                        </option>
+                      )
+                    )}
                   </select>
                 </div>
 
-               <button 
-  type="button" 
-  className="boton-login" 
-  onClick={iniciarCuestionario} 
-  disabled={cargandoPreguntas}
-  style={{ marginTop: '20px' }}
->
-  {cargandoPreguntas
-    ? '⏳ CARGANDO PREGUNTAS...'
-    : '▶️ COMENZAR CUESTIONARIO'}
-</button>
+                <button
+                  type="button"
+                  className="boton-login"
+                  onClick={
+                    iniciarCuestionario
+                  }
+                  disabled={
+                    cargandoPreguntas ||
+                    preguntasBancoSupabase.length ===
+                      0
+                  }
+                  style={{
+                    marginTop:
+                      '20px',
+                  }}
+                >
+                  {cargandoPreguntas
+                    ? '⏳ CARGANDO PREGUNTAS...'
+                    : '▶️ COMENZAR CUESTIONARIO'}
+                </button>
               </div>
 
               <section className="welcome">
-                <h3>💡 ¿Cómo funciona?</h3>
+                <h3>
+                  💡 ¿Cómo funciona?
+                </h3>
+
                 <p>
-                  Las preguntas se seleccionan
-                  aleatoriamente y no se repiten dentro
-                  del mismo cuestionario.
+                  Las preguntas se
+                  seleccionan
+                  aleatoriamente y no
+                  se repiten dentro
+                  del mismo
+                  cuestionario.
                 </p>
+
                 <p>
-                  Al terminar podrás ver tu porcentaje
-                  y guardar el resultado en tu progreso.
+                  Al terminar podrás
+                  ver tu porcentaje y
+                  guardar el resultado
+                  en tu progreso.
                 </p>
               </section>
             </>
           )}
 
-          {quizPreguntas.length > 0 &&
+          {/* =================================================
+              PREGUNTA ACTUAL
+              ================================================= */}
+
+          {quizPreguntas.length >
+            0 &&
             !quizFinalizado &&
             preguntaActual && (
               <>
                 <section className="welcome">
                   <p>
-                    Tema: <strong>{quizTema}</strong>
+                    Tema:{' '}
+                    <strong>
+                      {quizTema}
+                    </strong>
                   </p>
 
                   <h2>
-                    Pregunta {quizActual + 1} de{' '}
-                    {quizPreguntas.length}
+                    Pregunta{' '}
+                    {quizActual + 1}{' '}
+                    de{' '}
+                    {
+                      quizPreguntas.length
+                    }
                   </h2>
 
                   <p>
                     Progreso:{' '}
                     {Math.round(
-                      ((quizActual + 1) /
+                      ((quizActual +
+                        1) /
                         quizPreguntas.length) *
                         100
                     )}
@@ -1733,87 +1963,249 @@ const disponibles =
                 </section>
 
                 <div className="medicamento-detalle">
-                  <h3>
-                    {preguntaActual.pregunta}
+
+                  <h3
+                    style={{
+                      fontSize:
+                        '20px',
+                      lineHeight:
+                        '1.5',
+                    }}
+                  >
+                    {
+                      preguntaActual.pregunta
+                    }
                   </h3>
 
-                  <div style={{ marginTop: '20px' }}>
-                    {preguntaActual.opciones.map(
-                      (opcion, indice) => {
-                        const seleccionada =
-                          quizRespuesta === indice
+                  <div
+                    style={{
+                      marginTop:
+                        '20px',
+                    }}
+                  >
+                    {Array.isArray(
+                      preguntaActual.opciones
+                    ) &&
+                    preguntaActual
+                      .opciones
+                      .length > 0 ? (
+                      preguntaActual.opciones.map(
+                        (
+                          opcion,
+                          indice
+                        ) => {
+                          const seleccionada =
+                            Number(
+                              quizRespuesta
+                            ) ===
+                            Number(
+                              indice
+                            )
 
-                        const correcta =
-                          indice ===
-                          preguntaActual.correcta
+                          const correcta =
+                            Number(
+                              indice
+                            ) ===
+                            Number(
+                              preguntaActual.correcta
+                            )
 
-                        let fondo = 'transparent'
+                          let fondo =
+                            '#ffffff'
 
-                        if (
-                          quizRespuesta !== null &&
-                          correcta
-                        ) {
-                          fondo = '#dff6e4'
-                        } else if (seleccionada) {
-                          fondo = '#ffe0e0'
+                          let borde =
+                            '1px solid #ccc'
+
+                          if (
+                            quizRespuesta !==
+                              null &&
+                            correcta
+                          ) {
+                            fondo =
+                              '#dff6e4'
+
+                            borde =
+                              '2px solid #2e9d50'
+                          } else if (
+                            seleccionada
+                          ) {
+                            fondo =
+                              '#ffe0e0'
+
+                            borde =
+                              '2px solid #d9534f'
+                          }
+
+                          return (
+                            <button
+                              key={`${preguntaActual.id}-${indice}`}
+                              type="button"
+                              onClick={() =>
+                                responderPregunta(
+                                  indice
+                                )
+                              }
+                              disabled={
+                                quizRespuesta !==
+                                null
+                              }
+                              style={{
+                                display:
+                                  'block',
+                                width:
+                                  '100%',
+                                textAlign:
+                                  'left',
+                                padding:
+                                  '16px',
+                                marginBottom:
+                                  '12px',
+                                borderRadius:
+                                  '10px',
+                                border:
+                                  borde,
+                                background:
+                                  fondo,
+                                cursor:
+                                  quizRespuesta !==
+                                  null
+                                    ? 'default'
+                                    : 'pointer',
+                                fontSize:
+                                  '16px',
+                                fontWeight:
+                                  seleccionada
+                                    ? '700'
+                                    : '400',
+                                transition:
+                                  'all 0.2s ease',
+                                color:
+                                  '#222',
+                              }}
+                            >
+                              <strong>
+                                {String.fromCharCode(
+                                  65 +
+                                    indice
+                                )}
+                                .
+                              </strong>{' '}
+                              {opcion}
+                            </button>
+                          )
                         }
+                      )
+                    ) : (
+                      <div
+                        className="detalle-item"
+                        style={{
+                          background:
+                            '#fff3cd',
+                          border:
+                            '1px solid #ffeeba',
+                          padding:
+                            '15px',
+                          borderRadius:
+                            '10px',
+                        }}
+                      >
+                        <p>
+                          ⚠️ Esta pregunta
+                          no tiene
+                          opciones
+                          disponibles.
+                        </p>
 
-                        return (
-                          <button
-                            key={indice}
-                            type="button"
-                            onClick={() =>
-                              responderPregunta(
-                                indice
-                              )
-                            }
-                            style={{
-                              display: 'block',
-                              width: '100%',
-                              textAlign: 'left',
-                              padding: '15px',
-                              marginBottom: '10px',
-                              borderRadius: '10px',
-                              border:
-                                '1px solid #ccc',
-                              background: fondo,
-                              cursor:
-                                quizRespuesta !== null
-                                  ? 'default'
-                                  : 'pointer',
-                              fontSize: '16px',
-                            }}
-                          >
-                            {String.fromCharCode(
-                              65 + indice
-                            )}
-                            . {opcion}
-                          </button>
-                        )
-                      }
+                        <p
+                          style={{
+                            fontSize:
+                              '13px',
+                            color:
+                              '#666',
+                          }}
+                        >
+                          Revisa en
+                          Supabase que la
+                          columna
+                          <strong>
+                            {' '}
+                            opciones
+                          </strong>{' '}
+                          contenga las
+                          alternativas.
+                        </p>
+                      </div>
                     )}
                   </div>
 
-                  {quizRespuesta !== null && (
+                  {quizRespuesta !==
+                    null && (
                     <div
                       className="detalle-item"
-                      style={{ marginTop: '20px' }}
+                      style={{
+                        marginTop:
+                          '20px',
+                        padding:
+                          '15px',
+                        borderRadius:
+                          '10px',
+                      }}
                     >
-                      {quizRespuesta ===
-                      preguntaActual.correcta ? (
-                        <p>
-                          ✅ <strong>Correcto</strong>
+                      {Number(
+                        quizRespuesta
+                      ) ===
+                      Number(
+                        preguntaActual.correcta
+                      ) ? (
+                        <p
+                          style={{
+                            color:
+                              '#198754',
+                            fontWeight:
+                              '700',
+                          }}
+                        >
+                          ✅{' '}
+                          <strong>
+                            ¡Correcto!
+                          </strong>
                         </p>
                       ) : (
-                        <p>
-                          ❌ <strong>Incorrecto</strong>
+                        <p
+                          style={{
+                            color:
+                              '#dc3545',
+                            fontWeight:
+                              '600',
+                          }}
+                        >
+                          ❌{' '}
+                          <strong>
+                            Incorrecto
+                          </strong>
+
                           <br />
-                          Respuesta correcta:{' '}
-                          {
-                            preguntaActual.opciones[
-                              preguntaActual.correcta
-                            ]
-                          }
+
+                          <span
+                            style={{
+                              color:
+                                '#333',
+                              fontWeight:
+                                '400',
+                            }}
+                          >
+                            Respuesta
+                            correcta:{' '}
+                            <strong>
+                              {preguntaActual
+                                .opciones?.[
+                                Number(
+                                  preguntaActual.correcta
+                                )
+                              ] ??
+                                'No disponible'}
+                            </strong>
+                          </span>
                         </p>
                       )}
                     </div>
@@ -1822,8 +2214,28 @@ const disponibles =
                   <button
                     type="button"
                     className="boton-login"
-                    onClick={siguientePregunta}
-                    style={{ marginTop: '20px' }}
+                    onClick={
+                      siguientePregunta
+                    }
+                    disabled={
+                      quizRespuesta ===
+                      null
+                    }
+                    style={{
+                      marginTop:
+                        '20px',
+                      width: '100%',
+                      opacity:
+                        quizRespuesta ===
+                        null
+                          ? 0.5
+                          : 1,
+                      cursor:
+                        quizRespuesta ===
+                        null
+                          ? 'not-allowed'
+                          : 'pointer',
+                    }}
                   >
                     {quizActual + 1 ===
                     quizPreguntas.length
@@ -1834,28 +2246,45 @@ const disponibles =
               </>
             )}
 
+          {/* =================================================
+              RESULTADO FINAL
+              ================================================= */}
+
           {quizFinalizado && (
             <>
               <section className="welcome">
-                <h2>🎉 Cuestionario terminado</h2>
+                <h2>
+                  🎉 Cuestionario
+                  terminado
+                </h2>
 
                 <p>
-                  Tema: <strong>{quizTema}</strong>
+                  Tema:{' '}
+                  <strong>
+                    {quizTema}
+                  </strong>
                 </p>
 
                 <p
                   style={{
-                    fontSize: '30px',
-                    fontWeight: '800',
+                    fontSize:
+                      '30px',
+                    fontWeight:
+                      '800',
                   }}
                 >
-                  {quizPuntaje}/{quizPreguntas.length}
+                  {quizPuntaje}/
+                  {
+                    quizPreguntas.length
+                  }
                 </p>
 
                 <p
                   style={{
-                    fontSize: '24px',
-                    fontWeight: '800',
+                    fontSize:
+                      '24px',
+                    fontWeight:
+                      '800',
                   }}
                 >
                   {Math.round(
@@ -1865,11 +2294,23 @@ const disponibles =
                   )}
                   %
                 </p>
+
+                <p>
+                  {Math.round(
+                    (quizPuntaje /
+                      quizPreguntas.length) *
+                      100
+                  ) >= 70
+                    ? '🎉 ¡Cuestionario aprobado!'
+                    : '📚 Sigue practicando para mejorar tu resultado.'}
+                </p>
               </section>
 
               <div className="medicamento-detalle">
                 <div className="detalle-item">
-                  <strong>📊 Resultado</strong>
+                  <strong>
+                    📊 Resultado
+                  </strong>
 
                   <p>
                     Correctas:{' '}
@@ -1884,26 +2325,44 @@ const disponibles =
 
                   <p>
                     Preguntas:{' '}
-                    {quizPreguntas.length}
+                    {
+                      quizPreguntas.length
+                    }
+                  </p>
+
+                  <p>
+                    Porcentaje:{' '}
+                    {Math.round(
+                      (quizPuntaje /
+                        quizPreguntas.length) *
+                        100
+                    )}
+                    %
                   </p>
                 </div>
 
                 <button
                   type="button"
                   className="boton-login"
-                  onClick={volverASeleccionQuiz}
+                  onClick={
+                    volverASeleccionQuiz
+                  }
                 >
-                  🔄 HACER OTRO CUESTIONARIO
+                  🔄 HACER OTRO
+                  CUESTIONARIO
                 </button>
 
                 <button
                   type="button"
                   className="back-button"
                   onClick={() =>
-                    setPagina('progreso')
+                    setPagina(
+                      'progreso'
+                    )
                   }
                   style={{
-                    marginTop: '12px',
+                    marginTop:
+                      '12px',
                     width: '100%',
                   }}
                 >
@@ -1917,11 +2376,13 @@ const disponibles =
     )
   }
 
-  // =========================
+  // =========================================================
   // PROGRESO
-  // =========================
+  // =========================================================
 
-  if (pagina === 'progreso') {
+  if (
+    pagina === 'progreso'
+  ) {
     const promedio =
       progreso.intentos > 0
         ? Math.round(
@@ -1934,14 +2395,22 @@ const disponibles =
       <div className="app">
         <header className="header">
           <div>
-            <h1>📈 Mi progreso</h1>
-            <p>Resultados de tus cuestionarios</p>
+            <h1>
+              📈 Mi progreso
+            </h1>
+
+            <p>
+              Resultados de tus
+              cuestionarios
+            </p>
           </div>
 
           <button
             type="button"
             className="back-button"
-            onClick={() => setPagina('inicio')}
+            onClick={() =>
+              setPagina('inicio')
+            }
           >
             ← Volver
           </button>
@@ -1949,86 +2418,170 @@ const disponibles =
 
         <main className="content">
           <section className="welcome">
-            <h2>📊 Tu progreso</h2>
+            <h2>
+              📊 Tu progreso
+            </h2>
+
             <p>
-              Aquí puedes revisar tus resultados
-              acumulados.
+              Tus resultados se
+              guardan en tu cuenta
+              de NurseAssist.
             </p>
+
+            {cargandoProgreso && (
+              <p>
+                ⏳ Actualizando
+                progreso...
+              </p>
+            )}
           </section>
 
           <div className="medicamento-detalle">
             <div className="detalle-item">
-              <strong>📝 Intentos</strong>
-              <p style={{ fontSize: '26px' }}>
+              <strong>
+                📝 Intentos
+              </strong>
+
+              <p
+                style={{
+                  fontSize:
+                    '26px',
+                }}
+              >
                 {progreso.intentos}
               </p>
             </div>
 
             <div className="detalle-item">
-              <strong>📊 Promedio</strong>
-              <p style={{ fontSize: '26px' }}>
+              <strong>
+                📊 Promedio
+              </strong>
+
+              <p
+                style={{
+                  fontSize:
+                    '26px',
+                }}
+              >
                 {promedio}%
               </p>
             </div>
 
             <div className="detalle-item">
-              <strong>🏆 Mejor resultado</strong>
-              <p style={{ fontSize: '26px' }}>
-                {progreso.mejorPuntaje}%
+              <strong>
+                🏆 Mejor resultado
+              </strong>
+
+              <p
+                style={{
+                  fontSize:
+                    '26px',
+                }}
+              >
+                {
+                  progreso.mejorPuntaje
+                }
+                %
               </p>
             </div>
 
             <div className="detalle-item">
-              <strong>❓ Preguntas respondidas</strong>
-              <p style={{ fontSize: '26px' }}>
-                {progreso.preguntasRespondidas}
+              <strong>
+                ❓ Preguntas
+                respondidas
+              </strong>
+
+              <p
+                style={{
+                  fontSize:
+                    '26px',
+                }}
+              >
+                {
+                  progreso.preguntasRespondidas
+                }
               </p>
             </div>
 
             <div className="detalle-item">
-              <strong>✅ Cuestionarios aprobados</strong>
-              <p style={{ fontSize: '26px' }}>
-                {progreso.aprobados}
+              <strong>
+                ✅ Cuestionarios
+                aprobados
+              </strong>
+
+              <p
+                style={{
+                  fontSize:
+                    '26px',
+                }}
+              >
+                {
+                  progreso.aprobados
+                }
               </p>
             </div>
           </div>
 
           <section className="welcome">
-            <h3>📚 Resultados por tema</h3>
+            <h3>
+              📚 Resultados por
+              tema
+            </h3>
 
-            {Object.keys(progreso.resultadosPorTema)
-              .length === 0 ? (
+            {Object.keys(
+              progreso.resultadosPorTema
+            ).length === 0 ? (
               <p>
-                Todavía no tienes resultados
+                Todavía no tienes
+                resultados
                 registrados.
               </p>
             ) : (
               Object.entries(
                 progreso.resultadosPorTema
-              ).map(([tema, resultado]) => (
-                <div
-                  key={tema}
-                  className="detalle-item"
-                  style={{ marginTop: '12px' }}
-                >
-                  <strong>{tema}</strong>
+              ).map(
+                ([
+                  tema,
+                  resultado,
+                ]) => (
+                  <div
+                    key={tema}
+                    className="detalle-item"
+                    style={{
+                      marginTop:
+                        '12px',
+                    }}
+                  >
+                    <strong>
+                      {tema}
+                    </strong>
 
-                  <p>
-                    Intentos:{' '}
-                    {resultado.intentos}
-                  </p>
+                    <p>
+                      Intentos:{' '}
+                      {
+                        resultado.intentos
+                      }
+                    </p>
 
-                  <p>
-                    Mejor resultado:{' '}
-                    {resultado.mejorPuntaje}%
-                  </p>
+                    <p>
+                      Mejor
+                      resultado:{' '}
+                      {
+                        resultado.mejorPuntaje
+                      }
+                      %
+                    </p>
 
-                  <p>
-                    Preguntas respondidas:{' '}
-                    {resultado.preguntas}
-                  </p>
-                </div>
-              ))
+                    <p>
+                      Preguntas
+                      respondidas:{' '}
+                      {
+                        resultado.preguntas
+                      }
+                    </p>
+                  </div>
+                )
+              )
             )}
           </section>
         </main>
@@ -2036,23 +2589,30 @@ const disponibles =
     )
   }
 
-  // =========================
+  // =========================================================
   // PERFIL
-  // =========================
+  // =========================================================
 
   if (pagina === 'perfil') {
     return (
       <div className="app">
         <header className="header">
           <div>
-            <h1>👤 Mi perfil</h1>
-            <p>Cuenta de NurseAssist</p>
+            <h1>
+              👤 Mi perfil
+            </h1>
+
+            <p>
+              Cuenta de NurseAssist
+            </p>
           </div>
 
           <button
             type="button"
             className="back-button"
-            onClick={() => setPagina('inicio')}
+            onClick={() =>
+              setPagina('inicio')
+            }
           >
             ← Volver
           </button>
@@ -2060,30 +2620,59 @@ const disponibles =
 
         <main className="content">
           <section className="welcome">
-            <h2>Hola, {nombreUsuario} 👋</h2>
-            <p>{correoUsuario}</p>
+            <h2>
+              Hola, {nombreUsuario}{' '}
+              👋
+            </h2>
+
+            <p>
+              {correoUsuario}
+            </p>
           </section>
 
           <div className="medicamento-detalle">
             <div className="detalle-item">
-              <strong>📧 Correo</strong>
-              <p>{correoUsuario}</p>
+              <strong>
+                📧 Correo
+              </strong>
+
+              <p>
+                {correoUsuario}
+              </p>
             </div>
 
             <div className="detalle-item">
-              <strong>📝 Cuestionarios realizados</strong>
-              <p>{progreso.intentos}</p>
+              <strong>
+                📝 Cuestionarios
+                realizados
+              </strong>
+
+              <p>
+                {progreso.intentos}
+              </p>
             </div>
 
             <div className="detalle-item">
-              <strong>🏆 Mejor resultado</strong>
-              <p>{progreso.mejorPuntaje}%</p>
+              <strong>
+                🏆 Mejor resultado
+              </strong>
+
+              <p>
+                {
+                  progreso.mejorPuntaje
+                }
+                %
+              </p>
             </div>
 
             <button
               type="button"
               className="boton-login"
-              onClick={() => setPagina('progreso')}
+              onClick={() =>
+                setPagina(
+                  'progreso'
+                )
+              }
             >
               📈 VER MI PROGRESO
             </button>
@@ -2091,9 +2680,12 @@ const disponibles =
             <button
               type="button"
               className="back-button"
-              onClick={cerrarSesion}
+              onClick={
+                cerrarSesion
+              }
               style={{
-                marginTop: '12px',
+                marginTop:
+                  '12px',
                 width: '100%',
               }}
             >
@@ -2105,17 +2697,26 @@ const disponibles =
     )
   }
 
-  // =========================
+  // =========================================================
   // PROCEDIMIENTOS
-  // =========================
+  // =========================================================
 
-  if (pagina === 'procedimientos') {
+  if (
+    pagina ===
+    'procedimientos'
+  ) {
     return (
       <div className="app">
         <header className="header">
           <div>
-            <h1>🩺 Procedimientos</h1>
-            <p>Procedimientos de enfermería</p>
+            <h1>
+              🩺 Procedimientos
+            </h1>
+
+            <p>
+              Procedimientos de
+              enfermería
+            </p>
           </div>
 
           <button
@@ -2123,7 +2724,10 @@ const disponibles =
             className="back-button"
             onClick={() => {
               setPagina('inicio')
-              setProcedimientoSeleccionado(null)
+
+              setProcedimientoSeleccionado(
+                null
+              )
             }}
           >
             ← Volver
@@ -2135,7 +2739,9 @@ const disponibles =
             <input
               type="text"
               placeholder="Buscar procedimiento..."
-              value={busquedaProcedimiento}
+              value={
+                busquedaProcedimiento
+              }
               onChange={(e) =>
                 setBusquedaProcedimiento(
                   e.target.value
@@ -2149,7 +2755,9 @@ const disponibles =
               (procedimiento) => (
                 <button
                   type="button"
-                  key={procedimiento.id}
+                  key={
+                    procedimiento.id
+                  }
                   className="medicamento-card"
                   onClick={() => {
                     if (
@@ -2167,16 +2775,22 @@ const disponibles =
                   }}
                 >
                   <div className="card-icon">
-                    {procedimiento.icono}
+                    {
+                      procedimiento.icono
+                    }
                   </div>
 
                   <div>
                     <h3>
-                      {procedimiento.nombre}
+                      {
+                        procedimiento.nombre
+                      }
                     </h3>
 
                     <p>
-                      {procedimiento.descripcion}
+                      {
+                        procedimiento.descripcion
+                      }
                     </p>
                   </div>
                 </button>
@@ -2187,15 +2801,25 @@ const disponibles =
           {procedimientoSeleccionado && (
             <div
               className="medicamento-detalle"
-              style={{ marginTop: '20px' }}
+              style={{
+                marginTop:
+                  '20px',
+              }}
             >
               <h2>
-                {procedimientoSeleccionado.icono}{' '}
-                {procedimientoSeleccionado.nombre}
+                {
+                  procedimientoSeleccionado.icono
+                }{' '}
+                {
+                  procedimientoSeleccionado.nombre
+                }
               </h2>
 
               <div className="detalle-item">
-                <strong>🎯 Objetivo</strong>
+                <strong>
+                  🎯 Objetivo
+                </strong>
+
                 <p>
                   {
                     procedimientoSeleccionado.objetivo
@@ -2204,12 +2828,18 @@ const disponibles =
               </div>
 
               <div className="detalle-item">
-                <strong>🧰 Materiales</strong>
+                <strong>
+                  🧰 Materiales
+                </strong>
 
                 <ul>
                   {procedimientoSeleccionado.materiales.map(
                     (material) => (
-                      <li key={material}>
+                      <li
+                        key={
+                          material
+                        }
+                      >
                         {material}
                       </li>
                     )
@@ -2218,7 +2848,10 @@ const disponibles =
               </div>
 
               <div className="detalle-item">
-                <strong>📋 Procedimiento</strong>
+                <strong>
+                  📋 Procedimiento
+                </strong>
+
                 <p>
                   {
                     procedimientoSeleccionado.procedimiento
@@ -2227,25 +2860,41 @@ const disponibles =
               </div>
 
               <div className="detalle-item">
-                <strong>🔢 Pasos</strong>
+                <strong>
+                  🔢 Pasos
+                </strong>
 
                 <ol>
                   {procedimientoSeleccionado.pasos.map(
                     (paso) => (
-                      <li key={paso}>{paso}</li>
+                      <li
+                        key={paso}
+                      >
+                        {paso}
+                      </li>
                     )
                   )}
                 </ol>
               </div>
 
               <div className="detalle-item">
-                <strong>⚠️ Consideraciones</strong>
+                <strong>
+                  ⚠️ Consideraciones
+                </strong>
 
                 <ul>
                   {procedimientoSeleccionado.consideraciones.map(
-                    (consideracion) => (
-                      <li key={consideracion}>
-                        {consideracion}
+                    (
+                      consideracion
+                    ) => (
+                      <li
+                        key={
+                          consideracion
+                        }
+                      >
+                        {
+                          consideracion
+                        }
                       </li>
                     )
                   )}
@@ -2256,30 +2905,50 @@ const disponibles =
                 <>
                   <div className="detalle-item">
                     <strong>
-                      🫁 Sistemas de oxigenoterapia
+                      🫁 Sistemas de
+                      oxigenoterapia
                     </strong>
 
-                    <h4>Bajo flujo</h4>
+                    <h4>
+                      Bajo flujo
+                    </h4>
 
-                    <div style={{ overflowX: 'auto' }}>
+                    <div
+                      style={{
+                        overflowX:
+                          'auto',
+                      }}
+                    >
                       <table
                         style={{
-                          width: '100%',
+                          width:
+                            '100%',
                           borderCollapse:
                             'collapse',
                         }}
                       >
                         <thead>
                           <tr>
-                            <th>Dispositivo</th>
-                            <th>Flujo</th>
-                            <th>FiO₂ aprox.</th>
+                            <th>
+                              Dispositivo
+                            </th>
+
+                            <th>
+                              Flujo
+                            </th>
+
+                            <th>
+                              FiO₂
+                              aprox.
+                            </th>
                           </tr>
                         </thead>
 
                         <tbody>
                           {procedimientoSeleccionado.sistemas.bajoFlujo.map(
-                            (sistema) => (
+                            (
+                              sistema
+                            ) => (
                               <tr
                                 key={
                                   sistema.nombre
@@ -2290,11 +2959,13 @@ const disponibles =
                                     sistema.nombre
                                   }
                                 </td>
+
                                 <td>
                                   {
                                     sistema.flujo
                                   }
                                 </td>
+
                                 <td>
                                   {
                                     sistema.fio2
@@ -2309,31 +2980,49 @@ const disponibles =
 
                     <h4
                       style={{
-                        marginTop: '20px',
+                        marginTop:
+                          '20px',
                       }}
                     >
                       Alto flujo
                     </h4>
 
-                    <div style={{ overflowX: 'auto' }}>
+                    <div
+                      style={{
+                        overflowX:
+                          'auto',
+                      }}
+                    >
                       <table
                         style={{
-                          width: '100%',
+                          width:
+                            '100%',
                           borderCollapse:
                             'collapse',
                         }}
                       >
                         <thead>
                           <tr>
-                            <th>Dispositivo</th>
-                            <th>Flujo</th>
-                            <th>FiO₂ aprox.</th>
+                            <th>
+                              Dispositivo
+                            </th>
+
+                            <th>
+                              Flujo
+                            </th>
+
+                            <th>
+                              FiO₂
+                              aprox.
+                            </th>
                           </tr>
                         </thead>
 
                         <tbody>
                           {procedimientoSeleccionado.sistemas.altoFlujo.map(
-                            (sistema) => (
+                            (
+                              sistema
+                            ) => (
                               <tr
                                 key={
                                   sistema.nombre
@@ -2344,11 +3033,13 @@ const disponibles =
                                     sistema.nombre
                                   }
                                 </td>
+
                                 <td>
                                   {
                                     sistema.flujo
                                   }
                                 </td>
+
                                 <td>
                                   {
                                     sistema.fio2
@@ -2370,17 +3061,26 @@ const disponibles =
     )
   }
 
-  // =========================
+  // =========================================================
   // MEDICAMENTOS
-  // =========================
+  // =========================================================
 
-  if (pagina === 'medicamentos') {
+  if (
+    pagina ===
+    'medicamentos'
+  ) {
     return (
       <div className="app">
         <header className="header">
           <div>
-            <h1>💊 Medicamentos</h1>
-            <p>Información farmacológica</p>
+            <h1>
+              💊 Medicamentos
+            </h1>
+
+            <p>
+              Información
+              farmacológica
+            </p>
           </div>
 
           <button
@@ -2388,7 +3088,10 @@ const disponibles =
             className="back-button"
             onClick={() => {
               setPagina('inicio')
-              setMedicamentoSeleccionado(null)
+
+              setMedicamentoSeleccionado(
+                null
+              )
             }}
           >
             ← Volver
@@ -2400,7 +3103,9 @@ const disponibles =
             <input
               type="text"
               placeholder="Buscar medicamento..."
-              value={busquedaMedicamento}
+              value={
+                busquedaMedicamento
+              }
               onChange={(e) =>
                 setBusquedaMedicamento(
                   e.target.value
@@ -2414,25 +3119,31 @@ const disponibles =
               display: 'flex',
               gap: '8px',
               flexWrap: 'wrap',
-              marginBottom: '20px',
+              marginBottom:
+                '20px',
             }}
           >
-            {gruposMedicamentos.map((grupo) => (
-              <button
-                type="button"
-                key={grupo}
-                onClick={() =>
-                  setFiltroGrupo(grupo)
-                }
-                className={
-                  filtroGrupo === grupo
-                    ? 'boton-login'
-                    : 'back-button'
-                }
-              >
-                {grupo}
-              </button>
-            ))}
+            {gruposMedicamentos.map(
+              (grupo) => (
+                <button
+                  type="button"
+                  key={grupo}
+                  onClick={() =>
+                    setFiltroGrupo(
+                      grupo
+                    )
+                  }
+                  className={
+                    filtroGrupo ===
+                    grupo
+                      ? 'boton-login'
+                      : 'back-button'
+                  }
+                >
+                  {grupo}
+                </button>
+              )
+            )}
           </div>
 
           <div className="cards-grid">
@@ -2440,7 +3151,9 @@ const disponibles =
               (medicamento) => (
                 <button
                   type="button"
-                  key={medicamento.nombre}
+                  key={
+                    medicamento.nombre
+                  }
                   className="medicamento-card"
                   onClick={() =>
                     setMedicamentoSeleccionado(
@@ -2454,12 +3167,16 @@ const disponibles =
 
                   <div>
                     <h3>
-                      {medicamento.nombre}
+                      {
+                        medicamento.nombre
+                      }
                     </h3>
 
                     <p>
-                      {medicamento.grupo ||
-                        'Medicamento'}
+                      {
+                        medicamento.grupo ||
+                        'Medicamento'
+                      }
                     </p>
                   </div>
                 </button>
@@ -2467,13 +3184,17 @@ const disponibles =
             )}
           </div>
 
-          {medicamentosFiltrados.length === 0 && (
+          {medicamentosFiltrados.length ===
+            0 && (
             <section className="welcome">
               <h3>
-                No encontramos medicamentos
+                No encontramos
+                medicamentos
               </h3>
+
               <p>
-                Prueba con otro nombre o grupo.
+                Prueba con otro
+                nombre o grupo.
               </p>
             </section>
           )}
@@ -2481,15 +3202,23 @@ const disponibles =
           {medicamentoSeleccionado && (
             <div
               className="medicamento-detalle"
-              style={{ marginTop: '20px' }}
+              style={{
+                marginTop:
+                  '20px',
+              }}
             >
               <h2>
                 💊{' '}
-                {medicamentoSeleccionado.nombre}
+                {
+                  medicamentoSeleccionado.nombre
+                }
               </h2>
 
               <div className="detalle-item">
-                <strong>Grupo</strong>
+                <strong>
+                  Grupo
+                </strong>
+
                 <p>
                   {
                     medicamentoSeleccionado.grupo
@@ -2499,7 +3228,10 @@ const disponibles =
 
               {medicamentoSeleccionado.uso && (
                 <div className="detalle-item">
-                  <strong>Uso</strong>
+                  <strong>
+                    Uso
+                  </strong>
+
                   <p>
                     {
                       medicamentoSeleccionado.uso
@@ -2510,7 +3242,10 @@ const disponibles =
 
               {medicamentoSeleccionado.mecanismo && (
                 <div className="detalle-item">
-                  <strong>Mecanismo</strong>
+                  <strong>
+                    Mecanismo
+                  </strong>
+
                   <p>
                     {
                       medicamentoSeleccionado.mecanismo
@@ -2521,7 +3256,9 @@ const disponibles =
 
               {medicamentoSeleccionado.indicaciones && (
                 <div className="detalle-item">
-                  <strong>Indicaciones</strong>
+                  <strong>
+                    Indicaciones
+                  </strong>
 
                   <p>
                     {
@@ -2548,7 +3285,8 @@ const disponibles =
               {medicamentoSeleccionado.reacciones && (
                 <div className="detalle-item">
                   <strong>
-                    Reacciones adversas
+                    Reacciones
+                    adversas
                   </strong>
 
                   <p>
@@ -2562,7 +3300,8 @@ const disponibles =
               {medicamentoSeleccionado.reaccionesAdversas && (
                 <div className="detalle-item">
                   <strong>
-                    Reacciones adversas
+                    Reacciones
+                    adversas
                   </strong>
 
                   <p>
@@ -2579,23 +3318,33 @@ const disponibles =
     )
   }
 
-  // =========================
+  // =========================================================
   // URGENCIAS
-  // =========================
+  // =========================================================
 
-  if (pagina === 'urgencias') {
+  if (
+    pagina === 'urgencias'
+  ) {
     return (
       <div className="app">
         <header className="header">
           <div>
-            <h1>🚨 Urgencias</h1>
-            <p>Atención inicial y emergencias</p>
+            <h1>
+              🚨 Urgencias
+            </h1>
+
+            <p>
+              Atención inicial y
+              emergencias
+            </p>
           </div>
 
           <button
             type="button"
             className="back-button"
-            onClick={() => setPagina('inicio')}
+            onClick={() =>
+              setPagina('inicio')
+            }
           >
             ← Volver
           </button>
@@ -2603,10 +3352,15 @@ const disponibles =
 
         <main className="content">
           <section className="welcome">
-            <h2>🚨 Urgencias</h2>
+            <h2>
+              🚨 Urgencias
+            </h2>
+
             <p>
-              Sección destinada a contenidos de
-              evaluación inicial, emergencias y
+              Sección destinada a
+              contenidos de
+              evaluación inicial,
+              emergencias y
               atención oportuna.
             </p>
           </section>
@@ -2616,10 +3370,13 @@ const disponibles =
               <div className="card-icon">
                 ❤️
               </div>
+
               <div>
                 <h3>RCP</h3>
+
                 <p>
-                  Reanimación cardiopulmonar
+                  Reanimación
+                  cardiopulmonar
                 </p>
               </div>
             </div>
@@ -2628,10 +3385,16 @@ const disponibles =
               <div className="card-icon">
                 🚑
               </div>
+
               <div>
-                <h3>Emergencias</h3>
+                <h3>
+                  Emergencias
+                </h3>
+
                 <p>
-                  Evaluación y respuesta inicial
+                  Evaluación y
+                  respuesta
+                  inicial
                 </p>
               </div>
             </div>
@@ -2641,23 +3404,30 @@ const disponibles =
     )
   }
 
-  // =========================
+  // =========================================================
   // GUÍAS
-  // =========================
+  // =========================================================
 
   if (pagina === 'guias') {
     return (
       <div className="app">
         <header className="header">
           <div>
-            <h1>📚 Guías</h1>
-            <p>Consulta rápida</p>
+            <h1>
+              📚 Guías
+            </h1>
+
+            <p>
+              Consulta rápida
+            </p>
           </div>
 
           <button
             type="button"
             className="back-button"
-            onClick={() => setPagina('inicio')}
+            onClick={() =>
+              setPagina('inicio')
+            }
           >
             ← Volver
           </button>
@@ -2669,10 +3439,14 @@ const disponibles =
               <div className="card-icon">
                 🫁
               </div>
+
               <div>
                 <h3>EPOC</h3>
+
                 <p>
-                  Enfermedad pulmonar obstructiva
+                  Enfermedad
+                  pulmonar
+                  obstructiva
                   crónica
                 </p>
               </div>
@@ -2682,10 +3456,15 @@ const disponibles =
               <div className="card-icon">
                 🫁
               </div>
+
               <div>
-                <h3>Neumonía</h3>
+                <h3>
+                  Neumonía
+                </h3>
+
                 <p>
-                  Información general
+                  Información
+                  general
                 </p>
               </div>
             </div>
@@ -2694,10 +3473,13 @@ const disponibles =
               <div className="card-icon">
                 🫁
               </div>
+
               <div>
                 <h3>Asma</h3>
+
                 <p>
-                  Información general
+                  Información
+                  general
                 </p>
               </div>
             </div>
@@ -2707,23 +3489,33 @@ const disponibles =
     )
   }
 
-  // =========================
+  // =========================================================
   // FAVORITOS
-  // =========================
+  // =========================================================
 
-  if (pagina === 'favoritos') {
+  if (
+    pagina === 'favoritos'
+  ) {
     return (
       <div className="app">
         <header className="header">
           <div>
-            <h1>⭐ Guardados</h1>
-            <p>Tus contenidos favoritos</p>
+            <h1>
+              ⭐ Guardados
+            </h1>
+
+            <p>
+              Tus contenidos
+              favoritos
+            </p>
           </div>
 
           <button
             type="button"
             className="back-button"
-            onClick={() => setPagina('inicio')}
+            onClick={() =>
+              setPagina('inicio')
+            }
           >
             ← Volver
           </button>
@@ -2731,9 +3523,13 @@ const disponibles =
 
         <main className="content">
           <section className="welcome">
-            <h2>⭐ Guardados</h2>
+            <h2>
+              ⭐ Guardados
+            </h2>
+
             <p>
-              Aquí podrás acceder a tus contenidos
+              Aquí podrás acceder
+              a tus contenidos
               guardados.
             </p>
           </section>
@@ -2742,22 +3538,30 @@ const disponibles =
     )
   }
 
-  // =========================
+  // =========================================================
   // INICIO
-  // =========================
+  // =========================================================
 
   return (
     <div className="app">
       <header className="header">
         <div>
-          <h1>🩺 NurseAssist</h1>
-          <p>Tu asistente de enfermería</p>
+          <h1>
+            🩺 NurseAssist
+          </h1>
+
+          <p>
+            Tu asistente de
+            enfermería
+          </p>
         </div>
 
         <button
           type="button"
           className="back-button"
-          onClick={() => setPagina('perfil')}
+          onClick={() =>
+            setPagina('perfil')
+          }
         >
           👤
         </button>
@@ -2766,11 +3570,13 @@ const disponibles =
       <main className="content">
         <section className="welcome">
           <h2>
-            Hola, {nombreUsuario} 👋
+            Hola, {nombreUsuario}{' '}
+            👋
           </h2>
 
           <p>
-            ¿Qué necesitas consultar hoy?
+            ¿Qué necesitas
+            consultar hoy?
           </p>
         </section>
 
@@ -2778,86 +3584,116 @@ const disponibles =
           <input
             type="text"
             placeholder="🔎 Buscar medicamentos, procedimientos, guías..."
-            value={busquedaGeneral}
+            value={
+              busquedaGeneral
+            }
             onChange={(e) =>
-              setBusquedaGeneral(e.target.value)
+              setBusquedaGeneral(
+                e.target.value
+              )
             }
           />
         </div>
 
-        {busquedaGeneral.trim() !== '' && (
+        {busquedaGeneral.trim() !==
+          '' && (
           <section
             className="medicamento-detalle"
-            style={{ marginBottom: '20px' }}
+            style={{
+              marginBottom:
+                '20px',
+            }}
           >
             <h3>
-              Resultados de búsqueda
+              Resultados de
+              búsqueda
             </h3>
 
-            {resultadosFiltrados.length === 0 ? (
+            {resultadosFiltrados.length ===
+            0 ? (
               <p>
-                No encontramos resultados.
+                No encontramos
+                resultados.
               </p>
             ) : (
               resultadosFiltrados
                 .slice(0, 12)
-                .map((resultado) => (
-                  <button
-                    type="button"
-                    key={`${resultado.tipo}-${resultado.nombre}`}
-                    className="medicamento-card"
-                    style={{
-                      width: '100%',
-                      marginBottom: '10px',
-                    }}
-                    onClick={() => {
-                      setPagina(
-                        resultado.pagina
-                      )
-
-                      if (
-                        resultado.pagina ===
-                        'medicamentos'
-                      ) {
-                        setMedicamentoSeleccionado(
-                          resultado.dato
+                .map(
+                  (
+                    resultado
+                  ) => (
+                    <button
+                      type="button"
+                      key={`${resultado.tipo}-${resultado.nombre}`}
+                      className="medicamento-card"
+                      style={{
+                        width:
+                          '100%',
+                        marginBottom:
+                          '10px',
+                      }}
+                      onClick={() => {
+                        setPagina(
+                          resultado.pagina
                         )
-                      }
 
-                      if (
-                        resultado.pagina ===
-                        'procedimientos'
-                      ) {
-                        setProcedimientoSeleccionado(
-                          resultado.dato
+                        if (
+                          resultado.pagina ===
+                          'medicamentos'
+                        ) {
+                          setMedicamentoSeleccionado(
+                            resultado.dato
+                          )
+                        }
+
+                        if (
+                          resultado.pagina ===
+                          'procedimientos'
+                        ) {
+                          setProcedimientoSeleccionado(
+                            resultado.dato
+                          )
+                        }
+
+                        setBusquedaGeneral(
+                          ''
                         )
-                      }
+                      }}
+                    >
+                      <div className="card-icon">
+                        {
+                          resultado.icono
+                        }
+                      </div>
 
-                      setBusquedaGeneral('')
-                    }}
-                  >
-                    <div className="card-icon">
-                      {resultado.icono}
-                    </div>
+                      <div>
+                        <h3>
+                          {
+                            resultado.nombre
+                          }
+                        </h3>
 
-                    <div>
-                      <h3>
-                        {resultado.nombre}
-                      </h3>
-
-                      <p>
-                        {resultado.tipo} ·{' '}
-                        {resultado.descripcion}
-                      </p>
-                    </div>
-                  </button>
-                ))
+                        <p>
+                          {
+                            resultado.tipo
+                          }{' '}
+                          ·{' '}
+                          {
+                            resultado.descripcion
+                          }
+                        </p>
+                      </div>
+                    </button>
+                  )
+                )
             )}
           </section>
         )}
 
         <section className="welcome">
-          <h2>⚡ Acceso rápido</h2>
+          <h2>
+            ⚡ Acceso rápido
+          </h2>
         </section>
 
         <div className="cards-grid">
@@ -2865,7 +3701,9 @@ const disponibles =
             type="button"
             className="medicamento-card"
             onClick={() =>
-              setPagina('medicamentos')
+              setPagina(
+                'medicamentos'
+              )
             }
           >
             <div className="card-icon">
@@ -2873,7 +3711,10 @@ const disponibles =
             </div>
 
             <div>
-              <h3>Medicamentos</h3>
+              <h3>
+                Medicamentos
+              </h3>
+
               <p>
                 Consulta información
                 farmacológica
@@ -2885,7 +3726,9 @@ const disponibles =
             type="button"
             className="medicamento-card"
             onClick={() =>
-              setPagina('calculadora')
+              setPagina(
+                'calculadora'
+              )
             }
           >
             <div className="card-icon">
@@ -2894,8 +3737,10 @@ const disponibles =
 
             <div>
               <h3>
-                Calculadora de dosis
+                Calculadora de
+                dosis
               </h3>
+
               <p>
                 Dosis, volumen y
                 comprimidos
@@ -2916,10 +3761,13 @@ const disponibles =
 
             <div>
               <h3>
-                Calculadora de PAM
+                Calculadora de
+                PAM
               </h3>
+
               <p>
-                Presión arterial media
+                Presión arterial
+                media
               </p>
             </div>
           </button>
@@ -2937,10 +3785,13 @@ const disponibles =
 
             <div>
               <h3>
-                Calculadora de IMC
+                Calculadora de
+                IMC
               </h3>
+
               <p>
-                Índice de masa corporal
+                Índice de masa
+                corporal
               </p>
             </div>
           </button>
@@ -2949,7 +3800,9 @@ const disponibles =
             type="button"
             className="medicamento-card"
             onClick={() =>
-              setPagina('cuestionarios')
+              setPagina(
+                'cuestionarios'
+              )
             }
           >
             <div className="card-icon">
@@ -2957,7 +3810,10 @@ const disponibles =
             </div>
 
             <div>
-              <h3>Cuestionarios</h3>
+              <h3>
+                Cuestionarios
+              </h3>
+
               <p>
                 Practica por tema
               </p>
@@ -2968,7 +3824,9 @@ const disponibles =
             type="button"
             className="medicamento-card"
             onClick={() =>
-              setPagina('progreso')
+              setPagina(
+                'progreso'
+              )
             }
           >
             <div className="card-icon">
@@ -2976,9 +3834,13 @@ const disponibles =
             </div>
 
             <div>
-              <h3>Mi progreso</h3>
+              <h3>
+                Mi progreso
+              </h3>
+
               <p>
-                Revisa tus resultados
+                Revisa tus
+                resultados
               </p>
             </div>
           </button>
@@ -2987,7 +3849,9 @@ const disponibles =
             type="button"
             className="medicamento-card"
             onClick={() =>
-              setPagina('urgencias')
+              setPagina(
+                'urgencias'
+              )
             }
           >
             <div className="card-icon">
@@ -2995,10 +3859,13 @@ const disponibles =
             </div>
 
             <div>
-              <h3>Urgencias</h3>
+              <h3>
+                Urgencias
+              </h3>
+
               <p>
-                Emergencias y atención
-                inicial
+                Emergencias y
+                atención inicial
               </p>
             </div>
           </button>
@@ -3018,8 +3885,10 @@ const disponibles =
               <h3>
                 Entrega de turno
               </h3>
+
               <p>
-                Comunicación clínica
+                Comunicación
+                clínica
               </p>
             </div>
           </button>
@@ -3028,7 +3897,9 @@ const disponibles =
             type="button"
             className="medicamento-card"
             onClick={() =>
-              setPagina('procedimientos')
+              setPagina(
+                'procedimientos'
+              )
             }
           >
             <div className="card-icon">
@@ -3039,6 +3910,7 @@ const disponibles =
               <h3>
                 Procedimientos
               </h3>
+
               <p>
                 Procedimientos de
                 enfermería
@@ -3050,7 +3922,9 @@ const disponibles =
             type="button"
             className="medicamento-card"
             onClick={() =>
-              setPagina('guias')
+              setPagina(
+                'guias'
+              )
             }
           >
             <div className="card-icon">
@@ -3059,6 +3933,7 @@ const disponibles =
 
             <div>
               <h3>Guías</h3>
+
               <p>
                 Consulta rápida
               </p>
@@ -3069,7 +3944,9 @@ const disponibles =
             type="button"
             className="medicamento-card"
             onClick={() =>
-              setPagina('favoritos')
+              setPagina(
+                'favoritos'
+              )
             }
           >
             <div className="card-icon">
@@ -3077,7 +3954,10 @@ const disponibles =
             </div>
 
             <div>
-              <h3>Guardados</h3>
+              <h3>
+                Guardados
+              </h3>
+
               <p>
                 Tus contenidos
               </p>
@@ -3089,10 +3969,12 @@ const disponibles =
       <nav
         style={{
           display: 'flex',
-          justifyContent: 'space-around',
+          justifyContent:
+            'space-around',
           alignItems: 'center',
           padding: '12px',
-          borderTop: '1px solid #ddd',
+          borderTop:
+            '1px solid #ddd',
           position: 'sticky',
           bottom: 0,
           background: '#fff',
@@ -3102,7 +3984,9 @@ const disponibles =
         <button
           type="button"
           className="back-button"
-          onClick={() => setPagina('inicio')}
+          onClick={() =>
+            setPagina('inicio')
+          }
         >
           🏠 Inicio
         </button>
@@ -3128,7 +4012,9 @@ const disponibles =
           type="button"
           className="back-button"
           onClick={() =>
-            setPagina('favoritos')
+            setPagina(
+              'favoritos'
+            )
           }
         >
           ⭐ Guardados
