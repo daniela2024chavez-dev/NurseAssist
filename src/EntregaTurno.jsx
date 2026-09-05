@@ -2,10 +2,6 @@ import { useEffect, useState } from 'react'
 import './EntregaTurno.css'
 import { supabase } from './supabaseClient'
 
-// =====================================================
-// DATOS INICIALES
-// =====================================================
-
 const datosIniciales = {
   paciente: '',
   rut: '',
@@ -13,26 +9,19 @@ const datosIniciales = {
   servicio: '',
   cama: '',
   diagnostico: '',
-
   presionArterial: '',
   frecuenciaCardiaca: '',
   frecuenciaRespiratoria: '',
   saturacion: '',
   temperatura: '',
   glicemia: '',
-
   tratamientos: '',
   riesgos: '',
-
   situacion: '',
   antecedentes: '',
   evaluacion: '',
   recomendacion: '',
 }
-
-// =====================================================
-// FUNCIONES AUXILIARES
-// =====================================================
 
 const normalizarTexto = (valor = '') =>
   String(valor)
@@ -51,7 +40,9 @@ const formatearFecha = (fecha) => {
 
   const fechaObj = new Date(fecha)
 
-  if (Number.isNaN(fechaObj.getTime())) return '--'
+  if (Number.isNaN(fechaObj.getTime())) {
+    return '--'
+  }
 
   return fechaObj.toLocaleString('es-CL', {
     day: '2-digit',
@@ -62,18 +53,16 @@ const formatearFecha = (fecha) => {
   })
 }
 
-// =====================================================
-// EVALUACIÓN DE SIGNOS VITALES
-// =====================================================
-
 const evaluarSigno = (tipo, valor) => {
   if (valor === '' || valor === null || valor === undefined) {
     return 'normal'
   }
 
-  const numero = parseFloat(valor)
+  const numero = parseFloat(String(valor).replace(',', '.'))
 
-  if (Number.isNaN(numero)) return 'normal'
+  if (Number.isNaN(numero)) {
+    return 'normal'
+  }
 
   switch (tipo) {
     case 'frecuenciaCardiaca':
@@ -101,10 +90,6 @@ const evaluarSigno = (tipo, valor) => {
       return 'normal'
   }
 }
-
-// =====================================================
-// COMPONENTE SIGNO VITAL
-// =====================================================
 
 function CampoSignoVital({
   label,
@@ -146,38 +131,19 @@ function CampoSignoVital({
   )
 }
 
-// =====================================================
-// COMPONENTE PRINCIPAL
-// =====================================================
-
 function EntregaTurno({ usuario, onVolver }) {
   const [vista, setVista] = useState('pacientes')
-
   const [pacientesGuardados, setPacientesGuardados] = useState([])
-
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null)
-
   const [datos, setDatos] = useState(datosIniciales)
 
   const [cargando, setCargando] = useState(true)
-
   const [guardando, setGuardando] = useState(false)
-
   const [mensaje, setMensaje] = useState('')
 
-  // ===================================================
-  // FILTROS
-  // ===================================================
-
   const [busquedaPaciente, setBusquedaPaciente] = useState('')
-
   const [filtroServicio, setFiltroServicio] = useState('todos')
-
   const [ordenPacientes, setOrdenPacientes] = useState('recientes')
-
-  // ===================================================
-  // OBTENER USUARIO ACTUAL
-  // ===================================================
 
   const obtenerUsuarioActual = async () => {
     const {
@@ -187,18 +153,16 @@ function EntregaTurno({ usuario, onVolver }) {
     return user
   }
 
-  // ===================================================
-  // CARGAR PACIENTES
-  // ===================================================
-
   const cargarPacientes = async () => {
     setCargando(true)
+    setMensaje('')
 
     try {
       const user = await obtenerUsuarioActual()
 
       if (!user) {
         setPacientesGuardados([])
+        setMensaje('Debes iniciar sesión para ver tus pacientes.')
         setCargando(false)
         return
       }
@@ -211,6 +175,7 @@ function EntregaTurno({ usuario, onVolver }) {
 
       if (error) {
         console.error('Error cargando pacientes:', error)
+
         setMensaje('No fue posible cargar los pacientes.')
         setPacientesGuardados([])
       } else {
@@ -218,6 +183,7 @@ function EntregaTurno({ usuario, onVolver }) {
       }
     } catch (error) {
       console.error(error)
+
       setMensaje('Ocurrió un error al cargar los pacientes.')
       setPacientesGuardados([])
     } finally {
@@ -229,10 +195,6 @@ function EntregaTurno({ usuario, onVolver }) {
     cargarPacientes()
   }, [])
 
-  // ===================================================
-  // SERVICIOS DISPONIBLES
-  // ===================================================
-
   const servicios = [
     ...new Set(
       pacientesGuardados
@@ -243,20 +205,12 @@ function EntregaTurno({ usuario, onVolver }) {
     String(a).localeCompare(String(b), 'es')
   )
 
-  // ===================================================
-  // PACIENTES FILTRADOS
-  // ===================================================
-
   const pacientesFiltrados = [...pacientesGuardados]
     .filter((paciente) => {
       const busqueda = normalizarTexto(busquedaPaciente)
-
       const nombre = normalizarTexto(paciente.paciente)
-
       const cama = normalizarTexto(paciente.cama)
-
       const rut = normalizarRut(paciente.rut)
-
       const busquedaRut = normalizarRut(busquedaPaciente)
 
       const coincideBusqueda =
@@ -292,19 +246,11 @@ function EntregaTurno({ usuario, onVolver }) {
       )
     })
 
-  // ===================================================
-  // LIMPIAR FILTROS
-  // ===================================================
-
   const limpiarFiltros = () => {
     setBusquedaPaciente('')
     setFiltroServicio('todos')
     setOrdenPacientes('recientes')
   }
-
-  // ===================================================
-  // CAMBIO DE CAMPOS
-  // ===================================================
 
   const manejarCambio = (e) => {
     const { name, value } = e.target
@@ -315,10 +261,6 @@ function EntregaTurno({ usuario, onVolver }) {
     }))
   }
 
-  // ===================================================
-  // NUEVO PACIENTE
-  // ===================================================
-
   const nuevoPaciente = () => {
     setPacienteSeleccionado(null)
     setDatos(datosIniciales)
@@ -326,19 +268,11 @@ function EntregaTurno({ usuario, onVolver }) {
     setVista('formulario')
   }
 
-  // ===================================================
-  // VER PACIENTE
-  // ===================================================
-
   const verPaciente = (paciente) => {
     setPacienteSeleccionado(paciente)
-    setVista('detalle')
     setMensaje('')
+    setVista('detalle')
   }
-
-  // ===================================================
-  // EDITAR PACIENTE
-  // ===================================================
 
   const editarPaciente = (paciente) => {
     setPacienteSeleccionado(paciente)
@@ -353,20 +287,24 @@ function EntregaTurno({ usuario, onVolver }) {
 
       presionArterial:
         paciente.signos_vitales?.presionArterial || '',
+
       frecuenciaCardiaca:
         paciente.signos_vitales?.frecuenciaCardiaca || '',
+
       frecuenciaRespiratoria:
         paciente.signos_vitales?.frecuenciaRespiratoria || '',
+
       saturacion:
         paciente.signos_vitales?.saturacion || '',
+
       temperatura:
         paciente.signos_vitales?.temperatura || '',
+
       glicemia:
         paciente.signos_vitales?.glicemia || '',
 
       tratamientos: paciente.tratamientos || '',
       riesgos: paciente.riesgos || '',
-
       situacion: paciente.situacion || '',
       antecedentes: paciente.antecedentes || '',
       evaluacion: paciente.evaluacion || '',
@@ -376,10 +314,6 @@ function EntregaTurno({ usuario, onVolver }) {
     setMensaje('')
     setVista('formulario')
   }
-
-  // ===================================================
-  // GUARDAR PACIENTE
-  // ===================================================
 
   const guardarEntrega = async (e) => {
     e.preventDefault()
@@ -396,7 +330,10 @@ function EntregaTurno({ usuario, onVolver }) {
       const user = await obtenerUsuarioActual()
 
       if (!user) {
-        setMensaje('La sesión ha expirado. Ingresa nuevamente.')
+        setMensaje(
+          'La sesión ha expirado. Ingresa nuevamente.'
+        )
+
         setGuardando(false)
         return
       }
@@ -405,6 +342,7 @@ function EntregaTurno({ usuario, onVolver }) {
         user.user_metadata?.nombre ||
         user.user_metadata?.name ||
         user.email ||
+        usuario?.email ||
         'Usuario'
 
       const signosVitales = {
@@ -416,19 +354,16 @@ function EntregaTurno({ usuario, onVolver }) {
         glicemia: datos.glicemia,
       }
 
-      // ================================================
-      // NUEVO REGISTRO
-      // ================================================
-
       if (!pacienteSeleccionado) {
         const nuevoRegistro = {
           user_id: user.id,
-
           paciente: datos.paciente.trim(),
           rut: datos.rut.trim(),
+
           edad: datos.edad
             ? parseInt(datos.edad, 10)
             : null,
+
           servicio: datos.servicio.trim(),
           cama: datos.cama.trim(),
           diagnostico: datos.diagnostico.trim(),
@@ -437,13 +372,13 @@ function EntregaTurno({ usuario, onVolver }) {
 
           tratamientos: datos.tratamientos.trim(),
           riesgos: datos.riesgos.trim(),
-
           situacion: datos.situacion.trim(),
           antecedentes: datos.antecedentes.trim(),
           evaluacion: datos.evaluacion.trim(),
           recomendacion: datos.recomendacion.trim(),
 
           created_by_name: nombreUsuario,
+
           updated_by: user.id,
           updated_by_name: nombreUsuario,
           updated_at: new Date().toISOString(),
@@ -457,10 +392,11 @@ function EntregaTurno({ usuario, onVolver }) {
 
         if (error) {
           console.error('Error guardando:', error)
+
           setMensaje(
             `No se pudo guardar el paciente: ${error.message}`
           )
-          setGuardando(false)
+
           return
         }
 
@@ -472,19 +408,15 @@ function EntregaTurno({ usuario, onVolver }) {
         setPacienteSeleccionado(data)
         setVista('detalle')
         setMensaje('Paciente guardado correctamente.')
-      }
-
-      // ================================================
-      // ACTUALIZAR REGISTRO
-      // ================================================
-
-      else {
+      } else {
         const datosActualizados = {
           paciente: datos.paciente.trim(),
           rut: datos.rut.trim(),
+
           edad: datos.edad
             ? parseInt(datos.edad, 10)
             : null,
+
           servicio: datos.servicio.trim(),
           cama: datos.cama.trim(),
           diagnostico: datos.diagnostico.trim(),
@@ -493,7 +425,6 @@ function EntregaTurno({ usuario, onVolver }) {
 
           tratamientos: datos.tratamientos.trim(),
           riesgos: datos.riesgos.trim(),
-
           situacion: datos.situacion.trim(),
           antecedentes: datos.antecedentes.trim(),
           evaluacion: datos.evaluacion.trim(),
@@ -513,10 +444,11 @@ function EntregaTurno({ usuario, onVolver }) {
 
         if (error) {
           console.error('Error actualizando:', error)
+
           setMensaje(
             `No se pudo actualizar el paciente: ${error.message}`
           )
-          setGuardando(false)
+
           return
         }
 
@@ -534,6 +466,7 @@ function EntregaTurno({ usuario, onVolver }) {
       }
     } catch (error) {
       console.error(error)
+
       setMensaje(
         'Ocurrió un error inesperado al guardar.'
       )
@@ -542,10 +475,6 @@ function EntregaTurno({ usuario, onVolver }) {
     }
   }
 
-  // ===================================================
-  // VOLVER
-  // ===================================================
-
   const volverAPacientes = () => {
     setVista('pacientes')
     setPacienteSeleccionado(null)
@@ -553,18 +482,11 @@ function EntregaTurno({ usuario, onVolver }) {
     cargarPacientes()
   }
 
-  // ===================================================
-  // VISTA DE PACIENTES
-  // ===================================================
-
   if (vista === 'pacientes') {
     return (
       <div className="entrega-turno-container">
 
-        {/* ENCABEZADO */}
-
-        <div className="entrega-header">
-
+        <header className="entrega-header">
           <div className="entrega-header-info">
 
             <div className="entrega-logo">
@@ -588,6 +510,7 @@ function EntregaTurno({ usuario, onVolver }) {
           <div className="entrega-header-botones">
 
             <button
+              type="button"
               className="btn-volver"
               onClick={onVolver}
             >
@@ -595,6 +518,7 @@ function EntregaTurno({ usuario, onVolver }) {
             </button>
 
             <button
+              type="button"
               className="btn-nuevo"
               onClick={nuevoPaciente}
             >
@@ -602,12 +526,9 @@ function EntregaTurno({ usuario, onVolver }) {
             </button>
 
           </div>
+        </header>
 
-        </div>
-
-        {/* CONTENIDO */}
-
-        <div className="pacientes-panel">
+        <main className="pacientes-panel">
 
           <div className="pacientes-panel-header">
 
@@ -633,10 +554,6 @@ function EntregaTurno({ usuario, onVolver }) {
 
           </div>
 
-          {/* =================================================
-              BUSCADOR - SIEMPRE VISIBLE
-          ================================================= */}
-
           <div className="filtros-pacientes">
 
             <div className="campo-busqueda">
@@ -658,7 +575,7 @@ function EntregaTurno({ usuario, onVolver }) {
                   onChange={(e) =>
                     setBusquedaPaciente(e.target.value)
                   }
-                  placeholder="Buscar por nombre, RUT o cama..."
+                  placeholder="Nombre, RUT o cama..."
                   autoComplete="off"
                 />
 
@@ -676,7 +593,6 @@ function EntregaTurno({ usuario, onVolver }) {
                 )}
 
               </div>
-
             </div>
 
             <div className="campo-filtro">
@@ -741,14 +657,10 @@ function EntregaTurno({ usuario, onVolver }) {
               className="btn-limpiar-filtros"
               onClick={limpiarFiltros}
             >
-              Limpiar filtros
+              Limpiar
             </button>
 
           </div>
-
-          {/* =================================================
-              RESULTADO DE FILTROS
-          ================================================= */}
 
           {!cargando &&
             pacientesGuardados.length > 0 && (
@@ -765,23 +677,17 @@ function EntregaTurno({ usuario, onVolver }) {
               </div>
             )}
 
-          {/* =================================================
-              CARGANDO
-          ================================================= */}
-
           {cargando && (
             <div className="estado-pacientes">
+
               <div className="spinner"></div>
 
               <p>
                 Cargando pacientes...
               </p>
+
             </div>
           )}
-
-          {/* =================================================
-              SIN PACIENTES
-          ================================================= */}
 
           {!cargando &&
             pacientesGuardados.length === 0 && (
@@ -801,6 +707,7 @@ function EntregaTurno({ usuario, onVolver }) {
                 </p>
 
                 <button
+                  type="button"
                   className="btn-nuevo"
                   onClick={nuevoPaciente}
                 >
@@ -809,10 +716,6 @@ function EntregaTurno({ usuario, onVolver }) {
 
               </div>
             )}
-
-          {/* =================================================
-              NO HAY RESULTADOS
-          ================================================= */}
 
           {!cargando &&
             pacientesGuardados.length > 0 &&
@@ -833,6 +736,7 @@ function EntregaTurno({ usuario, onVolver }) {
                 </p>
 
                 <button
+                  type="button"
                   className="btn-limpiar-filtros"
                   onClick={limpiarFiltros}
                 >
@@ -842,17 +746,13 @@ function EntregaTurno({ usuario, onVolver }) {
               </div>
             )}
 
-          {/* =================================================
-              LISTADO DE PACIENTES
-          ================================================= */}
-
           {!cargando &&
             pacientesFiltrados.length > 0 && (
               <div className="lista-pacientes">
 
                 {pacientesFiltrados.map((paciente) => (
 
-                  <div
+                  <article
                     className="tarjeta-paciente"
                     key={paciente.id}
                   >
@@ -863,10 +763,20 @@ function EntregaTurno({ usuario, onVolver }) {
 
                     <div className="info-paciente">
 
-                      <h3>
-                        {paciente.paciente ||
-                          'Paciente sin nombre'}
-                      </h3>
+                      <div className="paciente-nombre-row">
+
+                        <h3>
+                          {paciente.paciente ||
+                            'Paciente sin nombre'}
+                        </h3>
+
+                        {paciente.servicio && (
+                          <span className="badge-servicio">
+                            {paciente.servicio}
+                          </span>
+                        )}
+
+                      </div>
 
                       <div className="datos-basicos">
 
@@ -884,12 +794,6 @@ function EntregaTurno({ usuario, onVolver }) {
                             </span>
                           )}
 
-                        {paciente.servicio && (
-                          <span>
-                            🏥 {paciente.servicio}
-                          </span>
-                        )}
-
                         {paciente.cama && (
                           <span>
                             🛏️ Cama {paciente.cama}
@@ -900,31 +804,18 @@ function EntregaTurno({ usuario, onVolver }) {
 
                       <div className="auditoria-paciente">
 
-                        <div>
-                          <strong>
-                            Creado por:
-                          </strong>{' '}
+                        <span>
+                          <strong>Creado:</strong>{' '}
                           {paciente.created_by_name ||
                             'Usuario anterior'}
-                        </div>
+                        </span>
 
-                        <div>
-                          <strong>
-                            Fecha:
-                          </strong>{' '}
+                        <span>
+                          <strong>Fecha:</strong>{' '}
                           {formatearFecha(
                             paciente.created_at
                           )}
-                        </div>
-
-                        {paciente.updated_by_name && (
-                          <div>
-                            <strong>
-                              Última edición:
-                            </strong>{' '}
-                            {paciente.updated_by_name}
-                          </div>
-                        )}
+                        </span>
 
                       </div>
 
@@ -954,32 +845,26 @@ function EntregaTurno({ usuario, onVolver }) {
 
                     </div>
 
-                  </div>
+                  </article>
 
                 ))}
 
               </div>
             )}
 
-        </div>
-
+        </main>
       </div>
     )
   }
 
-  // =====================================================
-  // VISTA DETALLE
-  // =====================================================
-
   if (vista === 'detalle' && pacienteSeleccionado) {
-
     const signos =
       pacienteSeleccionado.signos_vitales || {}
 
     return (
       <div className="entrega-turno-container">
 
-        <div className="entrega-header">
+        <header className="entrega-header">
 
           <div className="entrega-header-info">
 
@@ -988,6 +873,7 @@ function EntregaTurno({ usuario, onVolver }) {
             </div>
 
             <div>
+
               <div className="entrega-mini-titulo">
                 NURSEASSIST
               </div>
@@ -997,6 +883,7 @@ function EntregaTurno({ usuario, onVolver }) {
               <p>
                 Información clínica del paciente
               </p>
+
             </div>
 
           </div>
@@ -1004,6 +891,7 @@ function EntregaTurno({ usuario, onVolver }) {
           <div className="entrega-header-botones">
 
             <button
+              type="button"
               className="btn-volver"
               onClick={volverAPacientes}
             >
@@ -1011,6 +899,7 @@ function EntregaTurno({ usuario, onVolver }) {
             </button>
 
             <button
+              type="button"
               className="btn-nuevo"
               onClick={() =>
                 editarPaciente(
@@ -1023,31 +912,36 @@ function EntregaTurno({ usuario, onVolver }) {
 
           </div>
 
-        </div>
+        </header>
 
-        <div className="detalle-paciente">
+        <main className="detalle-paciente">
 
-          {/* IDENTIFICACIÓN */}
-
-          <section className="seccion-detalle">
+          <section className="seccion-detalle seccion-identificacion">
 
             <div className="titulo-seccion">
+
               <span>👤</span>
-              <h2>Identificación del paciente</h2>
+
+              <div>
+                <h2>Identificación</h2>
+                <p>Información básica del paciente</p>
+              </div>
+
             </div>
 
             <div className="grid-detalle">
 
               <div>
                 <label>Paciente</label>
+
                 <strong>
-                  {pacienteSeleccionado.paciente ||
-                    '--'}
+                  {pacienteSeleccionado.paciente || '--'}
                 </strong>
               </div>
 
               <div>
                 <label>RUT</label>
+
                 <strong>
                   {pacienteSeleccionado.rut || '--'}
                 </strong>
@@ -1055,8 +949,11 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div>
                 <label>Edad</label>
+
                 <strong>
-                  {pacienteSeleccionado.edad
+                  {pacienteSeleccionado.edad !== null &&
+                  pacienteSeleccionado.edad !== undefined &&
+                  pacienteSeleccionado.edad !== ''
                     ? `${pacienteSeleccionado.edad} años`
                     : '--'}
                 </strong>
@@ -1064,48 +961,57 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div>
                 <label>Servicio</label>
+
                 <strong>
-                  {pacienteSeleccionado.servicio ||
-                    '--'}
+                  {pacienteSeleccionado.servicio || '--'}
                 </strong>
               </div>
 
               <div>
                 <label>Cama</label>
+
                 <strong>
-                  {pacienteSeleccionado.cama ||
-                    '--'}
+                  {pacienteSeleccionado.cama || '--'}
                 </strong>
               </div>
 
               <div className="detalle-completo">
+
                 <label>Diagnóstico</label>
+
                 <p>
                   {pacienteSeleccionado.diagnostico ||
                     '--'}
                 </p>
+
               </div>
 
             </div>
 
           </section>
 
-          {/* SIGNOS VITALES */}
-
           <section className="seccion-detalle">
 
             <div className="titulo-seccion">
+
               <span>❤️</span>
-              <h2>Signos vitales</h2>
+
+              <div>
+                <h2>Signos vitales</h2>
+                <p>Últimos valores registrados</p>
+              </div>
+
             </div>
 
             <div className="grid-signos-detalle">
 
               <div className="signo-detalle">
                 <span>Presión arterial</span>
+
                 <strong>
                   {signos.presionArterial || '--'}
                 </strong>
+
                 {signos.presionArterial && (
                   <small>mmHg</small>
                 )}
@@ -1113,9 +1019,11 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div className="signo-detalle">
                 <span>Frecuencia cardíaca</span>
+
                 <strong>
                   {signos.frecuenciaCardiaca || '--'}
                 </strong>
+
                 {signos.frecuenciaCardiaca && (
                   <small>lpm</small>
                 )}
@@ -1123,19 +1031,23 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div className="signo-detalle">
                 <span>Frecuencia respiratoria</span>
+
                 <strong>
                   {signos.frecuenciaRespiratoria || '--'}
                 </strong>
+
                 {signos.frecuenciaRespiratoria && (
                   <small>rpm</small>
                 )}
               </div>
 
               <div className="signo-detalle">
-                <span>Saturación</span>
+                <span>Saturación O₂</span>
+
                 <strong>
                   {signos.saturacion || '--'}
                 </strong>
+
                 {signos.saturacion && (
                   <small>%</small>
                 )}
@@ -1143,9 +1055,11 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div className="signo-detalle">
                 <span>Temperatura</span>
+
                 <strong>
                   {signos.temperatura || '--'}
                 </strong>
+
                 {signos.temperatura && (
                   <small>°C</small>
                 )}
@@ -1153,9 +1067,11 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div className="signo-detalle">
                 <span>Glicemia</span>
+
                 <strong>
                   {signos.glicemia || '--'}
                 </strong>
+
                 {signos.glicemia && (
                   <small>mg/dL</small>
                 )}
@@ -1165,13 +1081,17 @@ function EntregaTurno({ usuario, onVolver }) {
 
           </section>
 
-          {/* TRATAMIENTOS */}
-
           <section className="seccion-detalle">
 
             <div className="titulo-seccion">
+
               <span>💊</span>
-              <h2>Tratamientos y cuidados</h2>
+
+              <div>
+                <h2>Tratamientos y cuidados</h2>
+                <p>Indicaciones y cuidados registrados</p>
+              </div>
+
             </div>
 
             <div className="texto-detalle">
@@ -1181,82 +1101,115 @@ function EntregaTurno({ usuario, onVolver }) {
 
           </section>
 
-          {/* RIESGOS */}
-
           <section className="seccion-detalle">
 
             <div className="titulo-seccion">
+
               <span>⚠️</span>
-              <h2>Riesgos y precauciones</h2>
+
+              <div>
+                <h2>Riesgos y precauciones</h2>
+                <p>Aspectos importantes para el siguiente turno</p>
+              </div>
+
             </div>
 
-            <div className="texto-detalle">
+            <div className="texto-detalle texto-alerta">
               {pacienteSeleccionado.riesgos ||
                 'No hay información registrada.'}
             </div>
 
           </section>
 
-          {/* SBAR */}
-
           <section className="seccion-detalle">
 
             <div className="titulo-seccion">
+
               <span>📋</span>
-              <h2>Entrega SBAR</h2>
+
+              <div>
+                <h2>Entrega SBAR</h2>
+                <p>Comunicación estructurada del paciente</p>
+              </div>
+
             </div>
 
             <div className="sbar-detalle">
 
-              <div>
-                <h3>S — Situación</h3>
-                <p>
-                  {pacienteSeleccionado.situacion ||
-                    'No registrado.'}
-                </p>
+              <div className="sbar-bloque situacion">
+                <div className="sbar-badge">S</div>
+
+                <div>
+                  <h3>Situación</h3>
+
+                  <p>
+                    {pacienteSeleccionado.situacion ||
+                      'No registrado.'}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h3>B — Antecedentes</h3>
-                <p>
-                  {pacienteSeleccionado.antecedentes ||
-                    'No registrado.'}
-                </p>
+              <div className="sbar-bloque antecedentes">
+                <div className="sbar-badge">B</div>
+
+                <div>
+                  <h3>Antecedentes</h3>
+
+                  <p>
+                    {pacienteSeleccionado.antecedentes ||
+                      'No registrado.'}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h3>A — Evaluación</h3>
-                <p>
-                  {pacienteSeleccionado.evaluacion ||
-                    'No registrado.'}
-                </p>
+              <div className="sbar-bloque evaluacion">
+                <div className="sbar-badge">A</div>
+
+                <div>
+                  <h3>Evaluación</h3>
+
+                  <p>
+                    {pacienteSeleccionado.evaluacion ||
+                      'No registrado.'}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h3>R — Recomendación</h3>
-                <p>
-                  {pacienteSeleccionado.recomendacion ||
-                    'No registrado.'}
-                </p>
+              <div className="sbar-bloque recomendacion">
+                <div className="sbar-badge">R</div>
+
+                <div>
+                  <h3>Recomendación</h3>
+
+                  <p>
+                    {pacienteSeleccionado.recomendacion ||
+                      'No registrado.'}
+                  </p>
+                </div>
               </div>
 
             </div>
 
           </section>
 
-          {/* AUDITORÍA */}
-
           <section className="seccion-detalle auditoria-detalle">
 
             <div className="titulo-seccion">
+
               <span>🕒</span>
-              <h2>Registro y modificaciones</h2>
+
+              <div>
+                <h2>Registro y modificaciones</h2>
+                <p>Historial de la información registrada</p>
+              </div>
+
             </div>
 
             <div className="auditoria-grid">
 
               <div>
                 <label>Creado por</label>
+
                 <strong>
                   {pacienteSeleccionado.created_by_name ||
                     'Usuario anterior'}
@@ -1265,6 +1218,7 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div>
                 <label>Fecha de creación</label>
+
                 <strong>
                   {formatearFecha(
                     pacienteSeleccionado.created_at
@@ -1274,6 +1228,7 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div>
                 <label>Última edición por</label>
+
                 <strong>
                   {pacienteSeleccionado.updated_by_name ||
                     'Sin modificaciones'}
@@ -1282,6 +1237,7 @@ function EntregaTurno({ usuario, onVolver }) {
 
               <div>
                 <label>Última modificación</label>
+
                 <strong>
                   {formatearFecha(
                     pacienteSeleccionado.updated_at
@@ -1296,6 +1252,7 @@ function EntregaTurno({ usuario, onVolver }) {
           <div className="botones-finales">
 
             <button
+              type="button"
               className="btn-volver"
               onClick={volverAPacientes}
             >
@@ -1303,6 +1260,7 @@ function EntregaTurno({ usuario, onVolver }) {
             </button>
 
             <button
+              type="button"
               className="btn-nuevo"
               onClick={() =>
                 editarPaciente(
@@ -1315,20 +1273,16 @@ function EntregaTurno({ usuario, onVolver }) {
 
           </div>
 
-        </div>
+        </main>
 
       </div>
     )
   }
 
-  // =====================================================
-  // FORMULARIO
-  // =====================================================
-
   return (
     <div className="entrega-turno-container">
 
-      <div className="entrega-header">
+      <header className="entrega-header">
 
         <div className="entrega-header-info">
 
@@ -1337,6 +1291,7 @@ function EntregaTurno({ usuario, onVolver }) {
           </div>
 
           <div>
+
             <div className="entrega-mini-titulo">
               NURSEASSIST
             </div>
@@ -1350,458 +1305,463 @@ function EntregaTurno({ usuario, onVolver }) {
             <p>
               Registro de entrega de turno
             </p>
+
           </div>
 
         </div>
 
         <button
+          type="button"
           className="btn-volver"
           onClick={volverAPacientes}
         >
           ← Volver
         </button>
 
-      </div>
+      </header>
 
-      <form
-        className="formulario-entrega"
-        onSubmit={guardarEntrega}
-      >
+      <main>
 
-        {/* IDENTIFICACIÓN */}
+        <form
+          className="formulario-entrega"
+          onSubmit={guardarEntrega}
+        >
 
-        <section className="form-seccion">
+          <section className="form-seccion">
 
-          <div className="form-titulo">
-            <span>👤</span>
+            <div className="form-titulo">
 
-            <div>
-              <h2>Identificación del paciente</h2>
-              <p>
-                Información básica del paciente
-              </p>
+              <span>👤</span>
+
+              <div>
+                <h2>Identificación del paciente</h2>
+
+                <p>
+                  Información básica del paciente
+                </p>
+              </div>
+
             </div>
-          </div>
 
-          <div className="form-grid">
+            <div className="form-grid">
 
-            <div className="campo-formulario campo-grande">
+              <div className="campo-formulario campo-grande">
 
-              <label htmlFor="paciente">
-                Nombre del paciente *
-              </label>
+                <label htmlFor="paciente">
+                  Nombre del paciente *
+                </label>
 
-              <input
-                id="paciente"
-                name="paciente"
-                type="text"
-                value={datos.paciente}
+                <input
+                  id="paciente"
+                  name="paciente"
+                  type="text"
+                  value={datos.paciente}
+                  onChange={manejarCambio}
+                  placeholder="Nombre completo"
+                  required
+                />
+
+              </div>
+
+              <div className="campo-formulario">
+
+                <label htmlFor="rut">
+                  RUT
+                </label>
+
+                <input
+                  id="rut"
+                  name="rut"
+                  type="text"
+                  value={datos.rut}
+                  onChange={manejarCambio}
+                  placeholder="12.345.678-9"
+                />
+
+              </div>
+
+              <div className="campo-formulario">
+
+                <label htmlFor="edad">
+                  Edad
+                </label>
+
+                <input
+                  id="edad"
+                  name="edad"
+                  type="number"
+                  min="0"
+                  max="130"
+                  value={datos.edad}
+                  onChange={manejarCambio}
+                  placeholder="Edad"
+                />
+
+              </div>
+
+              <div className="campo-formulario">
+
+                <label htmlFor="servicio">
+                  Servicio
+                </label>
+
+                <input
+                  id="servicio"
+                  name="servicio"
+                  type="text"
+                  value={datos.servicio}
+                  onChange={manejarCambio}
+                  placeholder="Ej: Medicina"
+                />
+
+              </div>
+
+              <div className="campo-formulario">
+
+                <label htmlFor="cama">
+                  Cama
+                </label>
+
+                <input
+                  id="cama"
+                  name="cama"
+                  type="text"
+                  value={datos.cama}
+                  onChange={manejarCambio}
+                  placeholder="Ej: 12"
+                />
+
+              </div>
+
+              <div className="campo-formulario campo-completo">
+
+                <label htmlFor="diagnostico">
+                  Diagnóstico
+                </label>
+
+                <textarea
+                  id="diagnostico"
+                  name="diagnostico"
+                  value={datos.diagnostico}
+                  onChange={manejarCambio}
+                  placeholder="Diagnóstico médico o motivo de hospitalización..."
+                  rows="3"
+                />
+
+              </div>
+
+            </div>
+
+          </section>
+
+          <section className="form-seccion">
+
+            <div className="form-titulo">
+
+              <span>❤️</span>
+
+              <div>
+                <h2>Signos vitales</h2>
+
+                <p>
+                  Registra los últimos signos vitales
+                </p>
+              </div>
+
+            </div>
+
+            <div className="signos-grid">
+
+              <CampoSignoVital
+                label="Presión arterial"
+                name="presionArterial"
+                value={datos.presionArterial}
                 onChange={manejarCambio}
-                placeholder="Nombre completo"
-                required
+                placeholder="120/80"
+                unidad="mmHg"
+                tipoEvaluacion="presionArterial"
               />
+
+              <CampoSignoVital
+                label="Frecuencia cardíaca"
+                name="frecuenciaCardiaca"
+                value={datos.frecuenciaCardiaca}
+                onChange={manejarCambio}
+                placeholder="80"
+                unidad="lpm"
+                tipoEvaluacion="frecuenciaCardiaca"
+              />
+
+              <CampoSignoVital
+                label="Frecuencia respiratoria"
+                name="frecuenciaRespiratoria"
+                value={datos.frecuenciaRespiratoria}
+                onChange={manejarCambio}
+                placeholder="16"
+                unidad="rpm"
+                tipoEvaluacion="frecuenciaRespiratoria"
+              />
+
+              <CampoSignoVital
+                label="Saturación O₂"
+                name="saturacion"
+                value={datos.saturacion}
+                onChange={manejarCambio}
+                placeholder="98"
+                unidad="%"
+                tipoEvaluacion="saturacion"
+              />
+
+              <CampoSignoVital
+                label="Temperatura"
+                name="temperatura"
+                value={datos.temperatura}
+                onChange={manejarCambio}
+                placeholder="36,5"
+                unidad="°C"
+                tipoEvaluacion="temperatura"
+              />
+
+              <CampoSignoVital
+                label="Glicemia"
+                name="glicemia"
+                value={datos.glicemia}
+                onChange={manejarCambio}
+                placeholder="100"
+                unidad="mg/dL"
+                tipoEvaluacion="glicemia"
+              />
+
+            </div>
+
+          </section>
+
+          <section className="form-seccion">
+
+            <div className="form-titulo">
+
+              <span>💊</span>
+
+              <div>
+                <h2>Tratamientos y cuidados</h2>
+
+                <p>
+                  Medicamentos, procedimientos y cuidados pendientes
+                </p>
+              </div>
 
             </div>
 
             <div className="campo-formulario">
 
-              <label htmlFor="rut">
-                RUT
-              </label>
-
-              <input
-                id="rut"
-                name="rut"
-                type="text"
-                value={datos.rut}
-                onChange={manejarCambio}
-                placeholder="12.345.678-9"
-              />
-
-            </div>
-
-            <div className="campo-formulario">
-
-              <label htmlFor="edad">
-                Edad
-              </label>
-
-              <input
-                id="edad"
-                name="edad"
-                type="number"
-                min="0"
-                max="130"
-                value={datos.edad}
-                onChange={manejarCambio}
-                placeholder="Edad"
-              />
-
-            </div>
-
-            <div className="campo-formulario">
-
-              <label htmlFor="servicio">
-                Servicio
-              </label>
-
-              <input
-                id="servicio"
-                name="servicio"
-                type="text"
-                value={datos.servicio}
-                onChange={manejarCambio}
-                placeholder="Ej: Medicina"
-              />
-
-            </div>
-
-            <div className="campo-formulario">
-
-              <label htmlFor="cama">
-                Cama
-              </label>
-
-              <input
-                id="cama"
-                name="cama"
-                type="text"
-                value={datos.cama}
-                onChange={manejarCambio}
-                placeholder="Ej: 12"
-              />
-
-            </div>
-
-            <div className="campo-formulario campo-completo">
-
-              <label htmlFor="diagnostico">
-                Diagnóstico
+              <label htmlFor="tratamientos">
+                Tratamientos / cuidados
               </label>
 
               <textarea
-                id="diagnostico"
-                name="diagnostico"
-                value={datos.diagnostico}
+                id="tratamientos"
+                name="tratamientos"
+                value={datos.tratamientos}
                 onChange={manejarCambio}
-                placeholder="Diagnóstico médico o motivo de hospitalización..."
-                rows="3"
+                placeholder="Ej: medicamentos, curaciones, oxigenoterapia, controles, procedimientos pendientes..."
+                rows="5"
               />
 
             </div>
 
-          </div>
+          </section>
 
-        </section>
+          <section className="form-seccion">
 
-        {/* SIGNOS VITALES */}
+            <div className="form-titulo">
 
-        <section className="form-seccion">
+              <span>⚠️</span>
 
-          <div className="form-titulo">
-            <span>❤️</span>
+              <div>
+                <h2>Riesgos y precauciones</h2>
 
-            <div>
-              <h2>Signos vitales</h2>
-              <p>
-                Registra los últimos signos vitales
-              </p>
-            </div>
-          </div>
-
-          <div className="signos-grid">
-
-            <CampoSignoVital
-              label="Presión arterial"
-              name="presionArterial"
-              value={datos.presionArterial}
-              onChange={manejarCambio}
-              placeholder="120/80"
-              unidad="mmHg"
-              tipoEvaluacion="presionArterial"
-            />
-
-            <CampoSignoVital
-              label="Frecuencia cardíaca"
-              name="frecuenciaCardiaca"
-              value={datos.frecuenciaCardiaca}
-              onChange={manejarCambio}
-              placeholder="80"
-              unidad="lpm"
-              tipoEvaluacion="frecuenciaCardiaca"
-            />
-
-            <CampoSignoVital
-              label="Frecuencia respiratoria"
-              name="frecuenciaRespiratoria"
-              value={datos.frecuenciaRespiratoria}
-              onChange={manejarCambio}
-              placeholder="16"
-              unidad="rpm"
-              tipoEvaluacion="frecuenciaRespiratoria"
-            />
-
-            <CampoSignoVital
-              label="Saturación O₂"
-              name="saturacion"
-              value={datos.saturacion}
-              onChange={manejarCambio}
-              placeholder="98"
-              unidad="%"
-              tipoEvaluacion="saturacion"
-            />
-
-            <CampoSignoVital
-              label="Temperatura"
-              name="temperatura"
-              value={datos.temperatura}
-              onChange={manejarCambio}
-              placeholder="36,5"
-              unidad="°C"
-              tipoEvaluacion="temperatura"
-            />
-
-            <CampoSignoVital
-              label="Glicemia"
-              name="glicemia"
-              value={datos.glicemia}
-              onChange={manejarCambio}
-              placeholder="100"
-              unidad="mg/dL"
-              tipoEvaluacion="glicemia"
-            />
-
-          </div>
-
-        </section>
-
-        {/* TRATAMIENTOS */}
-
-        <section className="form-seccion">
-
-          <div className="form-titulo">
-            <span>💊</span>
-
-            <div>
-              <h2>Tratamientos y cuidados</h2>
-              <p>
-                Medicamentos, procedimientos y cuidados pendientes
-              </p>
-            </div>
-          </div>
-
-          <div className="campo-formulario">
-
-            <label htmlFor="tratamientos">
-              Tratamientos / cuidados
-            </label>
-
-            <textarea
-              id="tratamientos"
-              name="tratamientos"
-              value={datos.tratamientos}
-              onChange={manejarCambio}
-              placeholder="Ej: medicamentos, curaciones, oxigenoterapia, controles, procedimientos pendientes..."
-              rows="5"
-            />
-
-          </div>
-
-        </section>
-
-        {/* RIESGOS */}
-
-        <section className="form-seccion">
-
-          <div className="form-titulo">
-            <span>⚠️</span>
-
-            <div>
-              <h2>Riesgos y precauciones</h2>
-              <p>
-                Información relevante para la continuidad de cuidados
-              </p>
-            </div>
-          </div>
-
-          <div className="campo-formulario">
-
-            <label htmlFor="riesgos">
-              Riesgos / precauciones
-            </label>
-
-            <textarea
-              id="riesgos"
-              name="riesgos"
-              value={datos.riesgos}
-              onChange={manejarCambio}
-              placeholder="Ej: riesgo de caída, alergias, aislamiento, riesgo de UPP..."
-              rows="4"
-            />
-
-          </div>
-
-        </section>
-
-        {/* SBAR */}
-
-        <section className="form-seccion">
-
-          <div className="form-titulo">
-
-            <span>📋</span>
-
-            <div>
-              <h2>Entrega SBAR</h2>
-              <p>
-                Comunicación estructurada de la información clínica
-              </p>
-            </div>
-
-          </div>
-
-          <div className="sbar-form">
-
-            <div className="sbar-item">
-
-              <div className="sbar-letra">
-                S
+                <p>
+                  Información relevante para la continuidad de cuidados
+                </p>
               </div>
 
-              <div className="campo-formulario">
+            </div>
 
-                <label htmlFor="situacion">
-                  Situación
-                </label>
+            <div className="campo-formulario">
 
-                <textarea
-                  id="situacion"
-                  name="situacion"
-                  value={datos.situacion}
-                  onChange={manejarCambio}
-                  placeholder="¿Cuál es la situación actual del paciente?"
-                  rows="4"
-                />
+              <label htmlFor="riesgos">
+                Riesgos / precauciones
+              </label>
+
+              <textarea
+                id="riesgos"
+                name="riesgos"
+                value={datos.riesgos}
+                onChange={manejarCambio}
+                placeholder="Ej: riesgo de caída, alergias, aislamiento, riesgo de UPP..."
+                rows="4"
+              />
+
+            </div>
+
+          </section>
+
+          <section className="form-seccion">
+
+            <div className="form-titulo">
+
+              <span>📋</span>
+
+              <div>
+                <h2>Entrega SBAR</h2>
+
+                <p>
+                  Comunicación estructurada de la información clínica
+                </p>
+              </div>
+
+            </div>
+
+            <div className="sbar-form">
+
+              <div className="sbar-item">
+
+                <div className="sbar-letra">
+                  S
+                </div>
+
+                <div className="campo-formulario">
+
+                  <label htmlFor="situacion">
+                    Situación
+                  </label>
+
+                  <textarea
+                    id="situacion"
+                    name="situacion"
+                    value={datos.situacion}
+                    onChange={manejarCambio}
+                    placeholder="¿Cuál es la situación actual del paciente?"
+                    rows="4"
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="sbar-item">
+
+                <div className="sbar-letra">
+                  B
+                </div>
+
+                <div className="campo-formulario">
+
+                  <label htmlFor="antecedentes">
+                    Antecedentes
+                  </label>
+
+                  <textarea
+                    id="antecedentes"
+                    name="antecedentes"
+                    value={datos.antecedentes}
+                    onChange={manejarCambio}
+                    placeholder="Antecedentes relevantes del paciente..."
+                    rows="4"
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="sbar-item">
+
+                <div className="sbar-letra">
+                  A
+                </div>
+
+                <div className="campo-formulario">
+
+                  <label htmlFor="evaluacion">
+                    Evaluación
+                  </label>
+
+                  <textarea
+                    id="evaluacion"
+                    name="evaluacion"
+                    value={datos.evaluacion}
+                    onChange={manejarCambio}
+                    placeholder="¿Cuál es tu evaluación actual del paciente?"
+                    rows="4"
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="sbar-item">
+
+                <div className="sbar-letra">
+                  R
+                </div>
+
+                <div className="campo-formulario">
+
+                  <label htmlFor="recomendacion">
+                    Recomendación
+                  </label>
+
+                  <textarea
+                    id="recomendacion"
+                    name="recomendacion"
+                    value={datos.recomendacion}
+                    onChange={manejarCambio}
+                    placeholder="¿Qué debe realizar o vigilar el siguiente turno?"
+                    rows="4"
+                  />
+
+                </div>
 
               </div>
 
             </div>
 
-            <div className="sbar-item">
+          </section>
 
-              <div className="sbar-letra">
-                B
-              </div>
-
-              <div className="campo-formulario">
-
-                <label htmlFor="antecedentes">
-                  Antecedentes
-                </label>
-
-                <textarea
-                  id="antecedentes"
-                  name="antecedentes"
-                  value={datos.antecedentes}
-                  onChange={manejarCambio}
-                  placeholder="Antecedentes relevantes del paciente..."
-                  rows="4"
-                />
-
-              </div>
-
+          {mensaje && (
+            <div className="mensaje-formulario">
+              {mensaje}
             </div>
+          )}
 
-            <div className="sbar-item">
+          <div className="botones-formulario">
 
-              <div className="sbar-letra">
-                A
-              </div>
+            <button
+              type="button"
+              className="btn-volver"
+              onClick={volverAPacientes}
+              disabled={guardando}
+            >
+              Cancelar
+            </button>
 
-              <div className="campo-formulario">
-
-                <label htmlFor="evaluacion">
-                  Evaluación
-                </label>
-
-                <textarea
-                  id="evaluacion"
-                  name="evaluacion"
-                  value={datos.evaluacion}
-                  onChange={manejarCambio}
-                  placeholder="¿Cuál es tu evaluación actual del paciente?"
-                  rows="4"
-                />
-
-              </div>
-
-            </div>
-
-            <div className="sbar-item">
-
-              <div className="sbar-letra">
-                R
-              </div>
-
-              <div className="campo-formulario">
-
-                <label htmlFor="recomendacion">
-                  Recomendación
-                </label>
-
-                <textarea
-                  id="recomendacion"
-                  name="recomendacion"
-                  value={datos.recomendacion}
-                  onChange={manejarCambio}
-                  placeholder="¿Qué debe realizar o vigilar el siguiente turno?"
-                  rows="4"
-                />
-
-              </div>
-
-            </div>
+            <button
+              type="submit"
+              className="btn-nuevo btn-guardar"
+              disabled={guardando}
+            >
+              {guardando
+                ? 'Guardando...'
+                : pacienteSeleccionado
+                  ? '✓ Guardar cambios'
+                  : '✓ Guardar paciente'}
+            </button>
 
           </div>
 
-        </section>
+        </form>
 
-        {/* MENSAJE */}
-
-        {mensaje && (
-          <div className="mensaje-formulario">
-            {mensaje}
-          </div>
-        )}
-
-        {/* BOTONES */}
-
-        <div className="botones-formulario">
-
-          <button
-            type="button"
-            className="btn-volver"
-            onClick={volverAPacientes}
-            disabled={guardando}
-          >
-            Cancelar
-          </button>
-
-          <button
-            type="submit"
-            className="btn-nuevo btn-guardar"
-            disabled={guardando}
-          >
-            {guardando
-              ? 'Guardando...'
-              : pacienteSeleccionado
-                ? '✓ Guardar cambios'
-                : '✓ Guardar paciente'}
-          </button>
-
-        </div>
-
-      </form>
+      </main>
 
     </div>
   )

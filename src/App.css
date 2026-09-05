@@ -1,119 +1,260 @@
+/* =========================================
+   NURSEASSIST — ESTILOS GENERALES
+========================================= */
+
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    Helvetica,
+    sans-serif;
   background: #f4f7f9;
   color: #1f2937;
 }
 
-button {
+button,
+input,
+select,
+textarea {
   font-family: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(74, 166, 166, 0.25);
+  outline-offset: 2px;
 }
 
 .app {
   min-height: 100vh;
-  padding-bottom: 90px;
+  padding-bottom: 95px;
 }
 
-/* =================================
+
+/* =========================================
    HEADER
-================================= */
+========================================= */
 
 .header {
-  background: #ffffff;
-  padding: 22px 6%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 18px 6%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
   border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  z-index: 5;
 }
 
 .header h1 {
   margin: 0;
   font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
   color: #17324d;
 }
 
 .header p {
   margin: 5px 0 0;
   color: #6b7280;
+  font-size: 14px;
 }
 
 .header-icons {
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
 .header-icons button {
   border: none;
   background: #eef6f7;
+  color: #087f8c;
   border-radius: 12px;
   width: 42px;
   height: 42px;
   cursor: pointer;
   font-size: 18px;
+  transition: 0.2s ease;
 }
 
-/* =================================
+.header-icons button:hover {
+  background: #dceff1;
+  transform: translateY(-1px);
+}
+
+
+/* =========================================
    LOGO NURSEASSIST
-================================= */
+========================================= */
 
 .logo-nurseassist {
-  width: 115px;
-  height: 115px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
   display: block;
   margin: 0 0 12px;
 
-  /* Mantiene el logo limpio dentro del header */
   background: #ffffff;
   border-radius: 22px;
-
-  /* Evita que se vea como una imagen pesada */
   padding: 5px;
+
+  box-shadow:
+    0 5px 18px rgba(23, 50, 77, 0.08);
 }
 
-/* =================================
-   CONTENIDO
-================================= */
+
+/* =========================================
+   CONTENIDO GENERAL
+========================================= */
 
 .content {
-  max-width: 1000px;
-  margin: auto;
-  padding: 35px 20px;
+  width: 100%;
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 38px 22px;
+}
+
+.welcome {
+  margin-bottom: 20px;
 }
 
 .welcome h2 {
   font-size: 32px;
-  margin: 0;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  color: #17324d;
+  font-weight: 800;
+  letter-spacing: -0.6px;
 }
 
 .welcome p {
   color: #6b7280;
-  font-size: 17px;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 8px 0;
 }
 
-/* =================================
+
+/* =========================================
+   PORTADA / HERO
+========================================= */
+
+.hero-nurseassist {
+  background:
+    linear-gradient(
+      135deg,
+      #17324d 0%,
+      #24536c 52%,
+      #2f7f88 100%
+    );
+
+  border-radius: 26px;
+  padding: 30px;
+  margin-bottom: 26px;
+  color: #ffffff;
+
+  box-shadow:
+    0 14px 35px rgba(23, 50, 77, 0.16);
+
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-nurseassist::before {
+  content: "";
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  right: -70px;
+  top: -80px;
+}
+
+.hero-nurseassist::after {
+  content: "";
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  right: 100px;
+  bottom: -70px;
+}
+
+.hero-nurseassist h2 {
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 800;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-nurseassist p {
+  margin: 0;
+  max-width: 650px;
+  color: rgba(255, 255, 255, 0.86);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+
+/* =========================================
    BUSCADOR GENERAL
-================================= */
+========================================= */
 
 .search {
-  margin: 30px 0;
+  margin: 25px 0 30px;
   background: #ffffff;
-  border: 1px solid #dfe5e8;
-  border-radius: 16px;
-  padding: 15px 18px;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  padding: 16px 19px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+
+  box-shadow:
+    0 5px 18px rgba(23, 50, 77, 0.07);
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.search:focus-within {
+  border-color: #4aa6a6;
+  box-shadow:
+    0 0 0 4px rgba(74, 166, 166, 0.11),
+    0 8px 22px rgba(23, 50, 77, 0.08);
 }
 
 .search span {
-  font-size: 20px;
+  font-size: 21px;
+  flex-shrink: 0;
 }
 
 .search input {
@@ -122,60 +263,182 @@ button {
   width: 100%;
   font-size: 16px;
   background: transparent;
+  color: #17324d;
 }
 
-/* =================================
-   TARJETAS
-================================= */
+.search input::placeholder {
+  color: #9aa8b2;
+}
 
-.cards {
+
+/* =========================================
+   SECCIONES DE LA PÁGINA PRINCIPAL
+========================================= */
+
+.seccion-principal {
+  margin-top: 32px;
+}
+
+.seccion-principal h3 {
+  margin: 0 0 15px;
+  color: #17324d;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.content h3 {
+  color: #17324d;
+  font-weight: 800;
+}
+
+
+/* =========================================
+   TARJETAS
+========================================= */
+
+.cards,
+.cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-top: 20px;
 }
 
-.content h3 {
-  margin-bottom: 18px;
-}
-
-.card {
+.card,
+.medicamento-card {
   background: #ffffff;
   border: 1px solid #e5ecef;
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 22px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+
+  box-shadow:
+    0 4px 14px rgba(23, 50, 77, 0.055);
 }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+.card:hover,
+.medicamento-card:hover {
+  transform: translateY(-4px);
+  border-color: #cfe3e5;
+
+  box-shadow:
+    0 12px 28px rgba(23, 50, 77, 0.11);
+}
+
+.card:active,
+.medicamento-card:active {
+  transform: translateY(-1px);
 }
 
 .card-icon {
-  display: block;
-  font-size: 30px;
-  margin-bottom: 12px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 27px;
+  margin-bottom: 15px;
+
+  background: #eef6f7;
+  border-radius: 15px;
 }
 
 .card strong {
   display: block;
   color: #17324d;
-  font-size: 18px;
+  font-size: 17px;
+  line-height: 1.3;
   margin-bottom: 6px;
+  font-weight: 800;
 }
 
 .card small {
   color: #6b7c87;
   font-size: 13px;
+  line-height: 1.45;
 }
 
-/* =================================
+
+/* =========================================
+   TARJETAS DESTACADAS
+========================================= */
+
+.card-destacada {
+  border: 2px solid #4aa6a6;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f2fafa
+    );
+}
+
+.card-destacada .card-icon {
+  background: #dff1f1;
+}
+
+
+/* =========================================
+   ACCESOS RÁPIDOS
+========================================= */
+
+.accesos-rapidos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 20px 0 30px;
+}
+
+.acceso-rapido {
+  border: none;
+  background: #ffffff;
+  border-radius: 17px;
+  padding: 17px 12px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  color: #17324d;
+  cursor: pointer;
+
+  border: 1px solid #e5ecef;
+
+  box-shadow:
+    0 4px 12px rgba(23, 50, 77, 0.05);
+
+  transition: 0.2s ease;
+}
+
+.acceso-rapido:hover {
+  transform: translateY(-3px);
+  border-color: #c8dfe1;
+  box-shadow:
+    0 9px 20px rgba(23, 50, 77, 0.09);
+}
+
+.acceso-rapido span:first-child {
+  font-size: 25px;
+}
+
+.acceso-rapido span:last-child {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================
    BOTÓN VOLVER
-================================= */
+========================================= */
 
 .back-button {
   border: none;
@@ -184,61 +447,105 @@ button {
   padding: 10px 16px;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
+  transition: 0.2s ease;
 }
 
 .back-button:hover {
   background: #dceff1;
+  transform: translateY(-1px);
 }
 
-/* =================================
+.back-button:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================
    MENÚ INFERIOR
-================================= */
+========================================= */
 
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #ffffff;
+
+  min-height: 72px;
+
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
   border-top: 1px solid #e5e7eb;
+
   display: flex;
   justify-content: center;
-  gap: 70px;
-  padding: 12px;
-  z-index: 10;
-  box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.05);
+  align-items: center;
+
+  gap: 65px;
+  padding: 10px 18px;
+
+  z-index: 100;
+
+  box-shadow:
+    0 -5px 22px rgba(23, 50, 77, 0.08);
 }
 
 .bottom-nav button {
+  min-width: 62px;
+
   border: none;
   background: transparent;
+
   cursor: pointer;
+
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+
   gap: 4px;
-  color: #6b7280;
+
+  color: #7b8790;
+  font-size: 20px;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.bottom-nav button:hover {
+  color: #087f8c;
+  transform: translateY(-2px);
 }
 
 .bottom-nav button span {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .bottom-nav .active {
   color: #087f8c;
 }
 
-/* =================================
+.bottom-nav .active span {
+  font-weight: 800;
+}
+
+
+/* =========================================
    FICHA DE MEDICAMENTOS
-================================= */
+========================================= */
 
 .medicamento-detalle {
   background: #ffffff;
-  border-radius: 20px;
-  padding: 24px;
+  border-radius: 22px;
+  padding: 26px;
   margin-top: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+
+  box-shadow:
+    0 8px 25px rgba(23, 50, 77, 0.08);
 }
 
 .medicamento-detalle h2 {
@@ -249,8 +556,8 @@ button {
 
 .detalle-item {
   background: #f5f8fa;
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 15px;
+  padding: 17px;
   margin-top: 14px;
   border-left: 4px solid #4aa6a6;
 }
@@ -265,7 +572,7 @@ button {
 .detalle-item p {
   margin: 0;
   color: #536471;
-  line-height: 1.5;
+  line-height: 1.55;
   font-size: 14px;
 }
 
@@ -281,28 +588,37 @@ button {
 
 .medicamento-detalle .back-button:hover {
   text-decoration: underline;
+  transform: none;
 }
 
-/* =================================
+
+/* =========================================
    BUSCADOR DE MEDICAMENTOS
-================================= */
+========================================= */
 
 .buscador-medicamentos {
   display: flex;
   align-items: center;
   gap: 12px;
+
   background: #ffffff;
   border: 2px solid #e5ecef;
-  border-radius: 16px;
+  border-radius: 17px;
+
   padding: 13px 16px;
   margin: 18px 0 24px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
+
+  box-shadow:
+    0 5px 15px rgba(23, 50, 77, 0.06);
+
+  transition: 0.2s ease;
 }
 
 .buscador-medicamentos:focus-within {
   border-color: #4aa6a6;
-  box-shadow: 0 0 0 4px rgba(74, 166, 166, 0.12);
+
+  box-shadow:
+    0 0 0 4px rgba(74, 166, 166, 0.12);
 }
 
 .buscador-medicamentos span {
@@ -314,6 +630,7 @@ button {
   border: none;
   outline: none;
   background: transparent;
+
   font-size: 15px;
   color: #17324d;
 }
@@ -322,17 +639,21 @@ button {
   color: #9aa8b2;
 }
 
-/* =================================
+
+/* =========================================
    FILTROS DE MEDICAMENTOS
-================================= */
+========================================= */
 
 .filtros-grupo {
   display: flex;
   gap: 8px;
+
   overflow-x: auto;
   overflow-y: hidden;
+
   padding: 10px 2px 14px;
   margin-bottom: 20px;
+
   white-space: nowrap;
   scrollbar-width: none;
 }
@@ -343,15 +664,20 @@ button {
 
 .filtro {
   flex: 0 0 auto;
+
   border: 1px solid #dce6ea;
   background: #ffffff;
   color: #536471;
+
   padding: 9px 16px;
   border-radius: 30px;
+
   font-size: 13px;
   font-weight: 600;
+
   cursor: pointer;
-  transition: all 0.2s ease;
+
+  transition: 0.2s ease;
 }
 
 .filtro:hover {
@@ -363,12 +689,111 @@ button {
   background: #4aa6a6;
   border-color: #4aa6a6;
   color: #ffffff;
-  box-shadow: 0 4px 10px rgba(74, 166, 166, 0.2);
+
+  box-shadow:
+    0 4px 10px rgba(74, 166, 166, 0.2);
 }
 
-/* =================================
+
+/* =========================================
+   CAMPOS DE FORMULARIO
+========================================= */
+
+.campo-login {
+  margin-bottom: 17px;
+}
+
+.campo-login label {
+  display: block;
+  margin-bottom: 7px;
+
+  color: #17324d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.campo-login input,
+.campo-login select,
+.campo-login textarea {
+  width: 100%;
+
+  border: 1px solid #d9e2e6;
+  background: #ffffff;
+
+  border-radius: 12px;
+
+  padding: 13px 14px;
+
+  font-size: 15px;
+  color: #17324d;
+
+  outline: none;
+
+  transition: 0.2s ease;
+}
+
+.campo-login input:focus,
+.campo-login select:focus,
+.campo-login textarea:focus {
+  border-color: #4aa6a6;
+
+  box-shadow:
+    0 0 0 4px rgba(74, 166, 166, 0.11);
+}
+
+.campo-login textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+
+/* =========================================
+   BOTÓN LOGIN / BOTÓN PRINCIPAL
+========================================= */
+
+.boton-login {
+  width: 100%;
+
+  border: none;
+  border-radius: 13px;
+
+  padding: 14px 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #087f8c,
+      #4aa6a6
+    );
+
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 16px rgba(8, 127, 140, 0.2);
+
+  transition: 0.2s ease;
+}
+
+.boton-login:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 20px rgba(8, 127, 140, 0.25);
+}
+
+.boton-login:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================
    CALCULADORA DE DOSIS
-================================= */
+========================================= */
 
 .calculadora-container {
   width: 100%;
@@ -406,7 +831,9 @@ button {
   background: #ffffff;
   border-radius: 20px;
   padding: 25px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+
+  box-shadow:
+    0 5px 20px rgba(23, 50, 77, 0.08);
 }
 
 .advertencia-calculadora {
@@ -440,12 +867,17 @@ button {
   background: #f8f8f8;
   border-radius: 14px;
   padding: 15px 10px;
+
   cursor: pointer;
+
   display: flex;
   flex-direction: column;
   align-items: center;
+
   gap: 8px;
+
   font-size: 14px;
+
   transition: all 0.2s ease;
 }
 
@@ -488,16 +920,21 @@ button {
 .formulario-calculo input {
   width: 100%;
   padding: 13px;
+
   border: 1px solid #ccc;
   border-radius: 10px;
+
   font-size: 16px;
   outline: none;
+
   background: #ffffff;
 }
 
 .formulario-calculo input:focus {
   border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+
+  box-shadow:
+    0 0 0 3px rgba(25, 118, 210, 0.1);
 }
 
 .botones-calculadora {
@@ -509,12 +946,18 @@ button {
 .btn-calcular,
 .btn-limpiar {
   flex: 1;
+
   border: none;
   border-radius: 12px;
+
   padding: 14px;
+
   font-size: 16px;
   font-weight: 600;
+
   cursor: pointer;
+
+  transition: 0.2s ease;
 }
 
 .btn-calcular {
@@ -524,6 +967,7 @@ button {
 
 .btn-calcular:hover {
   background: #1565c0;
+  transform: translateY(-1px);
 }
 
 .btn-limpiar {
@@ -537,10 +981,14 @@ button {
 
 .resultado-calculadora {
   margin-top: 25px;
+
   padding: 20px;
+
   border-radius: 15px;
+
   background: #eaf7ee;
   border: 2px solid #52a96b;
+
   text-align: center;
 }
 
@@ -555,28 +1003,173 @@ button {
   font-size: 32px;
 }
 
-/* =================================
+
+/* =========================================
+   CUESTIONARIOS
+========================================= */
+
+.quiz-container {
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.quiz-card {
+  background: #ffffff;
+  border-radius: 22px;
+  padding: 25px;
+
+  box-shadow:
+    0 8px 25px rgba(23, 50, 77, 0.08);
+}
+
+.quiz-opciones {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.quiz-opcion {
+  width: 100%;
+  border: 1px solid #dce6ea;
+  background: #ffffff;
+  border-radius: 14px;
+
+  padding: 15px;
+
+  text-align: left;
+  cursor: pointer;
+
+  color: #17324d;
+  font-size: 15px;
+  font-weight: 600;
+
+  transition: 0.2s ease;
+}
+
+.quiz-opcion:hover {
+  border-color: #4aa6a6;
+  background: #f4fbfb;
+  transform: translateY(-1px);
+}
+
+.quiz-progreso {
+  height: 8px;
+  background: #e7eef0;
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 15px 0 25px;
+}
+
+.quiz-progreso-barra {
+  height: 100%;
+  background: #4aa6a6;
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+
+/* =========================================
+   MENSAJES / ESTADOS
+========================================= */
+
+.mensaje-vacio {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 30px 20px;
+
+  text-align: center;
+
+  color: #6b7280;
+
+  border: 1px solid #e5ecef;
+}
+
+.mensaje-vacio strong {
+  display: block;
+  color: #17324d;
+  margin-bottom: 6px;
+}
+
+
+/* =========================================
+   ANIMACIONES
+========================================= */
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content {
+  animation: aparecer 0.3s ease;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 850px) {
+
+  .cards,
+  .cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .accesos-rapidos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bottom-nav {
+    gap: 35px;
+  }
+}
+
+
+/* =========================================
    CELULARES
-================================= */
+========================================= */
 
 @media (max-width: 700px) {
 
+  .app {
+    padding-bottom: 90px;
+  }
+
   .header {
-    padding: 18px;
+    padding: 16px 18px;
   }
 
   .header h1 {
-    font-size: 23px;
+    font-size: 22px;
   }
 
   .header p {
-    font-size: 14px;
+    font-size: 13px;
+  }
+
+  .header-icons {
+    gap: 6px;
+  }
+
+  .header-icons button {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
   }
 
   .logo-nurseassist {
-    width: 85px;
-    height: 85px;
-    margin-bottom: 10px;
+    width: 82px;
+    height: 82px;
+    margin-bottom: 9px;
   }
 
   .content {
@@ -587,17 +1180,50 @@ button {
     font-size: 27px;
   }
 
-  .cards {
+  .welcome p {
+    font-size: 15px;
+  }
+
+  .hero-nurseassist {
+    padding: 24px 20px;
+    border-radius: 22px;
+  }
+
+  .hero-nurseassist h2 {
+    font-size: 25px;
+  }
+
+  .hero-nurseassist p {
+    font-size: 14px;
+  }
+
+  .search {
+    margin: 20px 0 25px;
+    padding: 14px 15px;
+  }
+
+  .search input {
+    font-size: 15px;
+  }
+
+  .cards,
+  .cards-grid {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
 
-  .card {
+  .card,
+  .medicamento-card {
     padding: 17px;
+    border-radius: 17px;
   }
 
   .card-icon {
-    font-size: 25px;
+    width: 45px;
+    height: 45px;
+    font-size: 23px;
+    margin-bottom: 11px;
+    border-radius: 13px;
   }
 
   .card strong {
@@ -608,8 +1234,37 @@ button {
     font-size: 11px;
   }
 
+  .accesos-rapidos {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .acceso-rapido {
+    padding: 14px 10px;
+  }
+
   .bottom-nav {
-    gap: 25px;
+    gap: 15px;
+    justify-content: space-around;
+    padding: 9px 8px;
+  }
+
+  .bottom-nav button {
+    min-width: 52px;
+    font-size: 19px;
+  }
+
+  .bottom-nav button span {
+    font-size: 10px;
+  }
+
+  .medicamento-detalle {
+    padding: 19px;
+    border-radius: 18px;
+  }
+
+  .medicamento-detalle h2 {
+    font-size: 24px;
   }
 
   .tipos-calculo {
@@ -631,23 +1286,78 @@ button {
   .botones-calculadora {
     flex-direction: column;
   }
+
+  .quiz-card {
+    padding: 19px;
+  }
 }
 
-/* =================================
+
+/* =========================================
    CELULARES PEQUEÑOS
-================================= */
+========================================= */
 
 @media (max-width: 400px) {
 
-  .cards {
+  .header {
+    padding: 14px;
+  }
+
+  .content {
+    padding: 22px 13px;
+  }
+
+  .welcome h2 {
+    font-size: 24px;
+  }
+
+  .hero-nurseassist {
+    padding: 21px 17px;
+  }
+
+  .hero-nurseassist h2 {
+    font-size: 22px;
+  }
+
+  .cards,
+  .cards-grid {
     grid-template-columns: 1fr;
   }
 
   .bottom-nav {
-    gap: 18px;
+    gap: 5px;
+  }
+
+  .bottom-nav button {
+    min-width: 45px;
   }
 
   .bottom-nav button span {
-    font-size: 11px;
+    font-size: 9px;
+  }
+
+  .tipos-calculo {
+    grid-template-columns: 1fr;
+  }
+
+  .accesos-rapidos {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+/* =========================================
+   PANTALLAS GRANDES
+========================================= */
+
+@media (min-width: 1200px) {
+
+  .content {
+    max-width: 1100px;
+  }
+
+  .cards,
+  .cards-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
